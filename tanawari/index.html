@@ -274,7 +274,9 @@ function stopScan() {
 document.getElementById("btn-scan").addEventListener("click", () => { scanning ? stopScan() : startScan(); });
 document.getElementById("btn-ext").addEventListener("click", () => {
   const ret = "https://ryosukekun129-ai.github.io/tanawari/?scan={CODE}";
-  location.href = "https://zxing.appspot.com/scan?ret=" + encodeURIComponent(ret) + "&SCAN_FORMATS=EAN_13,EAN_8";
+  location.href = "intent://scan/?ret=" + encodeURIComponent(ret) + "&SCAN_FORMATS=EAN_13,EAN_8" +
+    "#Intent;scheme=zxing;package=com.teacapps.barcodescanner;S.browser_fallback_url=" +
+    encodeURIComponent("https://ryosukekun129-ai.github.io/tanawari/") + ";end";
 });
 (function () {
   const q = new URLSearchParams(location.search).get("scan");
