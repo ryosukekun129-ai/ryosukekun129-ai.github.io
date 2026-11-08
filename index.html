@@ -1,13 +1,449 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<title>バーコード管理資料</title>
-<meta http-equiv="refresh" content="0; url=https://drive.google.com/file/d/1LZkxD4Us-YrOeZn0jGnxKJjjxBPSihh6/view?usp=drivesdk">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>POP作成・印刷</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#24683c">
+<style>
+*{box-sizing:border-box} body{margin:0;background:#eef1ee;color:#203126;font-family:"Yu Gothic",Meiryo,sans-serif}
+header{padding:24px 28px;background:#fff;border-bottom:1px solid #dae2db}h1{font-size:22px;margin:0 0 6px}header p{margin:0;color:#667569;font-size:13px}
+main{display:grid;grid-template-columns:320px 1fr;gap:24px;max-width:1200px;margin:24px auto;padding:0 24px}
+.controls{background:white;border:1px solid #dbe3dc;border-radius:12px;padding:22px;align-self:start}
+label{display:block;font-size:13px;font-weight:bold;margin:0 0 7px}input,select,textarea{width:100%;padding:10px;border:1px solid #cbd6cd;border-radius:6px;font:inherit;font-size:14px;background:white}textarea{resize:vertical}
+.field{margin-bottom:16px}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hint{font-size:12px;color:#657266;line-height:1.8}
+button{width:100%;border:0;border-radius:7px;padding:13px;background:#24683c;color:white;font:inherit;font-weight:bold;cursor:pointer}button:hover{background:#18542e}
+.preview{min-width:0}.preview-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:13px}
+.stage{background:#dce3dd;padding:32px;min-height:520px;display:flex;align-items:center;justify-content:center;border-radius:12px;overflow:auto}
+.paper{width:100%;max-width:640px;filter:drop-shadow(0 3px 8px #152b1920)}
+#art{display:block;width:100%;height:auto;background:white;overflow:visible} .crop{display:none}
+.status{color:#b42318;font-size:13px}
+@media(max-width:760px){main{grid-template-columns:1fr;padding:0 14px;margin-top:16px}.stage{padding:20px;min-height:0}header{padding:20px}.controls{padding:18px}}
+
+.mode-switch{position:relative;height:54px;margin-bottom:22px;border-radius:30px;background:#aa94d0;overflow:hidden;box-shadow:inset 0 1px 4px #34244825;--position:100%;--progress:1}
+.mode-green{position:absolute;inset:0 auto 0 0;width:calc((100% + 12px) * var(--progress) + 55px * min(1, var(--progress)*5) * (1 - var(--progress)));background:linear-gradient(to right,#40a65e calc(100% - 12px),#40a65e00);transition:width .22s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.mode-thumb{position:absolute;top:5px;left:calc(5px + (100% - 54px)*var(--progress));width:44px;height:44px;border-radius:50%;background:linear-gradient(#fff,#f4f4f6);box-shadow:0 2px 6px #1d213138;transition:left .22s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+.mode-thumb::after{content:'';position:absolute;inset:15px 17px;border-left:2px solid #c9c9d1;border-right:2px solid #c9c9d1}
+.mode-switch input{position:absolute;inset:0;margin:0;padding:0;width:100%;height:100%;opacity:0;cursor:grab;touch-action:pan-y}
+.mode-switch:has(input:focus-visible){outline:3px solid #334c72;outline-offset:3px}
+.mode-switch:has(input:active) .mode-thumb,.mode-switch:has(input:active) .mode-green{transition:none}
+@media(prefers-reduced-motion:reduce){.mode-thumb,.mode-green{transition:none}}
+#inputDisc{height:75px}
+#add{background:#fff;color:#24683c;border:1px solid #24683c;margin-bottom:10px}
+#batch{max-width:1152px;margin:24px auto 40px;padding:24px;background:#fff;border-radius:12px}
+.batch-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.batch-head h2{font-size:20px;margin:0}
+#clear{width:auto;background:#f5eeee;color:#963a3a;font-size:13px}
+#list{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px;margin-top:18px}
+.pop-card{border:1px solid #dbe3dc;padding:12px;border-radius:8px;min-width:0}.pop-card svg{display:block;width:100%;height:auto;aspect-ratio:1}
+.pop-card p{font-size:13px;overflow-wrap:anywhere}.pop-card button{padding:8px;background:#f0f2f0;color:#344637;font-size:13px}
+#notice{font-size:13px;color:#24683c;line-height:1.7}
+#printOutput{display:none}
+@media(max-width:760px){#batch{margin:16px 14px;padding:16px}#list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.batch-head{align-items:flex-start}}
+@media print{
+ @page{size:A4;margin:0}
+ html,body{margin:0;padding:0;background:#fff;width:210mm}
+ header,main,#batch{display:none!important}
+ #printOutput{display:block}
+ .print-sheet{width:210mm;height:297mm;position:relative;break-after:page;page-break-after:always;overflow:hidden}
+ .print-sheet:last-child{break-after:auto;page-break-after:auto}
+ .print-sheet.single{display:flex;align-items:center;justify-content:center}
+ .print-sheet.grid{display:grid;grid-template-columns:100mm 100mm;grid-template-rows:100mm 100mm;gap:2mm;align-content:center;justify-content:center}
+ .print-pop{display:block;width:100mm;height:100mm;overflow:visible;flex:none}
+ .print-pop .crop{display:none}
+ .single .crop{display:inline}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+.stepper{display:flex;gap:6px;align-items:stretch}.stepper input{min-width:0;flex:1;appearance:textfield;-moz-appearance:textfield}
+.stepper input::-webkit-inner-spin-button,.stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.step-buttons{display:flex;flex-direction:column;gap:3px;width:44px;flex:none}.step-buttons button{padding:5px;min-height:36px;background:#e9f0ea;color:#24683c;font-size:19px;line-height:1}
+button:disabled{opacity:.45;cursor:not-allowed}
+</style>
+<style>
+.pb-wrap{max-width:1152px;margin:0 auto 40px;padding:24px;background:#fff;border:1px solid #dbe3dc;border-radius:12px}
+.pb-title{font-size:20px;margin:0 0 6px}
+.pb-meta{font-size:13px;color:#657266;margin:0 0 16px}
+.pb-scan{margin-bottom:14px}
+.pb-row{display:grid;grid-template-columns:1fr 120px;gap:10px;margin-bottom:12px}
+.pb-names{display:grid;gap:8px;margin-bottom:12px}
+.pb-name-item{background:#f0f2f0;color:#344637;padding:10px;font-size:13px;text-align:left}
+.pb-result{border:1px solid #dbe3dc;border-radius:8px;padding:16px;margin-top:6px}
+.pb-rname{font-weight:bold;margin:0 0 10px;overflow-wrap:anywhere}
+.pb-dl{margin:0 0 14px}
+.pb-dl>div{display:grid;grid-template-columns:84px 1fr;gap:8px;padding:4px 0;font-size:14px}
+.pb-dl dt{font-weight:bold;color:#657266}
+.pb-dl dd{margin:0;overflow-wrap:anywhere}
+.pb-none{color:#b42318;font-size:14px}
+.pb-note{font-size:12px;color:#657266;line-height:1.7}
+@media(max-width:760px){.pb-wrap{margin:16px 14px;padding:16px}.pb-row{grid-template-columns:1fr 96px}}
+@media print{.pb-wrap{display:none!important}}
+</style>
 </head>
 <body>
-<p>バーコード管理資料を開いています…</p>
-<p><a href="https://drive.google.com/file/d/1LZkxD4Us-YrOeZn0jGnxKJjjxBPSihh6/view?usp=drivesdk">自動で開かない場合はこちら</a></p>
-<script>location.replace("https://drive.google.com/file/d/1LZkxD4Us-YrOeZn0jGnxKJjjxBPSihh6/view?usp=drivesdk");</script>
+<header><h1>POP作成・印刷</h1><p>見本のレイアウトを保ったまま、商品名・点数・値引き額を変更できます。</p></header>
+<main>
+<section class="controls" aria-label="POPの設定">
+<div class="mode-switch" id="colorSwitch">
+<span class="mode-green" aria-hidden="true"></span><span class="mode-thumb" aria-hidden="true"></span>
+<input id="colorSlider" type="range" min="0" max="100" step="1" value="100" aria-label="POPの色（左：紫、右：緑）" aria-valuetext="緑" title="左へスライドで紫、右へスライドで緑">
+</div>
+<div class="field"><label for="inputName">商品名</label><input id="inputName" value="" maxlength="60"></div>
+<div class="field"><label for="inputVariant">種類の表示</label><input id="inputVariant" value="" maxlength="12"></div>
+<div class="row"><div class="field"><label for="inputQty">購入点数</label><div class="stepper"><input id="inputQty" type="number" min="1" max="10" step="1" value=""><div class="step-buttons"><button type="button" data-step="1" data-target="inputQty" aria-label="購入点数を増やす">＋</button><button type="button" data-step="-1" data-target="inputQty" aria-label="購入点数を減らす">−</button></div></div></div><div class="field"><label for="inputDisc">値引き額（円）</label><input id="inputDisc" type="number" min="0" max="99999" step="1" value=""></div></div>
+<div class="row"><div class="field"><label for="inputCode">商品コード</label><input id="inputCode" value="" maxlength="15"></div><div class="field"><label for="inputSubcode">補助コード</label><input id="inputSubcode" value="" maxlength="15"></div></div>
+<div class="field"><label for="inputCopies">追加する部数（1〜10枚）</label><div class="stepper"><input id="inputCopies" type="number" min="1" max="10" step="1" value="" required><div class="step-buttons"><button type="button" data-step="1" data-target="inputCopies" aria-label="部数を増やす">＋</button><button type="button" data-step="-1" data-target="inputCopies" aria-label="部数を減らす">−</button></div></div><p class="hint">同じPOPを指定した枚数だけリストへ追加します。</p></div>
+<p id="error" class="status" role="status"></p>
+<button id="add" type="button">＋ 印刷リストに追加</button>
+<p id="notice" role="status"></p>
+<button id="print">印刷・PDFに保存</button>
+<p class="hint">A4・倍率100％（実際のサイズ）・余白なし・ヘッダーとフッターなしで印刷してください。入力と印刷リストは再読み込みで消えます。2列印刷は左右の余白が4mmになるため、プリンターの印刷可能範囲を確認してください。</p>
+</section>
+<section class="preview" aria-label="印刷プレビュー">
+<div class="preview-heading"><strong>仕上がりプレビュー</strong><span id="sizeLabel"></span></div>
+<div class="stage"><div class="paper"><svg id="art" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="値引きPOP" viewBox="0 0 600 580" preserveAspectRatio="none">
+<defs>
+ <linearGradient id="green" x2="0" y2="1"><stop stop-color="#43ab32"/><stop offset=".5" stop-color="#269329"/><stop offset="1" stop-color="#36a52e"/></linearGradient>
+ <linearGradient id="wash" x2="0" y2="1"><stop stop-color="#edf9d7"/><stop offset=".35" stop-color="#fff"/><stop offset="1" stop-color="#fff"/></linearGradient>
+ <linearGradient id="blue" x2="0" y2="1"><stop stop-color="#5ebdec"/><stop offset="1" stop-color="#49afe1"/></linearGradient>
+ <linearGradient id="red" x2="1" y2=".6"><stop stop-color="#e60019"/><stop offset="1" stop-color="#e72737"/></linearGradient>
+ <path id="star" d="M0 -6 1.7 -1.9 6 -1.9 2.7 1 3.8 5.4 0 2.8 -3.8 5.4 -2.7 1 -6 -1.9 -1.7 -1.9Z"/>
+</defs>
+<g id="design"></g><g id="marks" class="crop" fill="none" stroke="#555" stroke-width=".5"></g>
+</svg></div></div>
+<p class="hint">写真の配置をベクトルで再構成。文字や数字を変更しても、各要素は指定した枠内に収まります。</p>
+</section>
+</main>
+<section id="batch" aria-label="印刷リスト">
+<div class="batch-head"><h2>印刷リスト <span id="count">0枚</span></h2><button id="clear" type="button" hidden>すべて削除</button></div>
+<p id="batchInfo" class="hint">まだ追加されていません。追加しない場合は、編集中のPOPをA4中央に1枚印刷します。</p>
+<div id="list"></div>
+</section>
+<section class="pb-wrap" aria-label="ポイントバンドル照合">
+<h2 class="pb-title">ポイントバンドル照合</h2>
+<p class="pb-meta" id="pbMeta">データ読み込み中…</p>
+<button type="button" class="pb-scan" id="pbScan">バーコードスキャン（TeaCapps）</button>
+<div class="pb-row">
+<input id="pbJan" inputmode="numeric" placeholder="JANコードを入力" maxlength="13" aria-label="JANコード">
+<button type="button" id="pbLookup">照合</button>
+</div>
+<div class="pb-row">
+<input id="pbName" placeholder="商品名で検索" aria-label="商品名で検索">
+<button type="button" id="pbSearch">検索</button>
+</div>
+<div id="pbNames" class="pb-names"></div>
+<div id="pbResult" class="pb-result" hidden>
+<p class="pb-rname" id="pbRName"></p>
+<dl class="pb-dl">
+<div><dt>設定内容</dt><dd id="pbRPromo"></dd></div>
+<div><dt>種類</dt><dd id="pbRSection"></dd></div>
+<div><dt>期間</dt><dd id="pbRPeriod"></dd></div>
+<div id="pbRKikakuRow"><dt>企画</dt><dd id="pbRKikaku"></dd></div>
+<div><dt>JAN</dt><dd id="pbRJan"></dd></div>
+</dl>
+<button type="button" id="pbApply">POPに反映</button>
+<p class="pb-note" id="pbApplyNote"></p>
+</div>
+<p class="pb-none" id="pbNone" hidden>設定なし（このJANはデータに載っていません）</p>
+</section>
+<div id="printOutput" aria-hidden="true"></div>
+<script>
+const $ = id => document.getElementById(id);
+const ns = 'http://www.w3.org/2000/svg';
+const ids = ['inputName','inputVariant','inputQty','inputDisc','inputCode','inputSubcode'];
+let mode='green';
+const queue=[];
+let cloneSerial=0;
+const palettes={
+ green:{frame:['#43ab32','#269329','#36a52e'],wash:'#edf9d7',star:'#77b65a'},
+ purple:{frame:['#ac96d3','#9077bc','#a08acb'],wash:'#eee7fa',star:'#a08acb'}
+};
+const NOTE = '※他クーポンとの併用は出来ません※割引きシール貼付商品は対象外です';
+function shape(tag, attrs, parent) {
+ const el=document.createElementNS(ns,tag);
+ for(const [key,value] of Object.entries(attrs)) el.setAttribute(key,value);
+ parent.append(el); return el;
+}
+// Fit each editable text into its reference-image ink rectangle, independent of font metrics.
+function text(parent,value,x,y,w,h,{fill='#101511',family='"Yu Gothic",Meiryo,sans-serif',weight=900,stroke='none',outline=0}={}) {
+ if(!value.trim()) return;
+ const group=shape('g',{},parent);
+ const el=shape('text',{x:0,y:0,'font-size':100,'font-family':family,'font-weight':weight,fill,stroke,'stroke-width':outline,'stroke-linejoin':'round','paint-order':'stroke fill','xml:space':'preserve'},group);
+ el.textContent=value;
+ const ctx=document.createElement('canvas').getContext('2d');
+ ctx.font=weight+' 100px '+family;
+ const metrics=ctx.measureText(value);
+ const b={x:-metrics.actualBoundingBoxLeft,y:-metrics.actualBoundingBoxAscent,width:metrics.actualBoundingBoxLeft+metrics.actualBoundingBoxRight,height:metrics.actualBoundingBoxAscent+metrics.actualBoundingBoxDescent};
+ if(!b.width||!b.height)return;
+ group.setAttribute('transform',`translate(${x} ${y}) scale(${w/b.width} ${h/b.height}) translate(${-b.x} ${-b.y})`);
+}
+function stars(parent,y) {
+ for(const [x,dy,s] of [[24,0,1],[14,5,.55],[39,-2,.4],[14,14,.35]]) shape('use',{href:'#star',transform:`translate(${x} ${y+dy}) scale(${s})`,fill:palettes[mode].star},parent);
+}
+function panel(parent,large,offset) {
+ const g=shape('g',{transform:`translate(0 ${offset})`},parent);
+ const H=large?390:195;
+ shape('rect',{width:600,height:H,fill:'url(#green)'},g);
+ shape('rect',{x:large?12:6,y:large?17:5,width:large?576:588,height:large?360:183,fill:'url(#wash)'},g);
+ const n=$('inputName').value, v=$('inputVariant').value;
+ text(g,n,20,large?53:17,482,large?64:51,{stroke:'#101511',outline:4});
+ text(g,v,515,large?76:37,66,large?40:31,{stroke:'#101511',outline:4});
+ if(large) {
+  text(g,$('inputCode').value,24,140,40,15);
+  text(g,$('inputSubcode').value,26,158,31,10);
+  stars(g,187);
+ } else stars(g,79);
+ const qty=$('inputQty').value;
+ const disc=$('inputDisc').value;
+ const num={family:'"Arial Black",Arial,sans-serif',weight:900};
+ text(g,qty,large?27:58,large?213:85,large?62:38,large?107:76,num);
+ text(g,'点',large?97:129,large?293:137,large?27:24,large?31:25);
+ shape('ellipse',{cx:large?222:239,cy:large?278:123,rx:large?100:90,ry:large?53:37,fill:'url(#blue)'},g);
+ text(g,large?'購入で!':'購入で',large?131:165,large?246:97,large?181:146,large?75:57,{fill:'#fff',family:'"Yu Mincho","MS Mincho",serif',stroke:'#183f80',outline:9});
+ text(g,disc,large?330:341,large?159:84,large?163:137,large?166:76,{...num,fill:'url(#red)'});
+ text(g,'円',large?500:493,large?280:129,large?30:28,large?47:31,{fill:'#df1830',weight:900});
+ text(g,'引き!',large?534:526,large?295:139,large?53:55,large?32:22);
+ text(g,NOTE,large?23:38,large?343:172,large?558:526,large?20:14,{weight:500});
+}
+function valid() { return ids.every(id=>!$(id).checkValidity||$(id).checkValidity()); }
+function render() {
+ const palette=palettes[mode];
+ document.querySelectorAll('#green stop').forEach((stop,i)=>stop.setAttribute('stop-color',palette.frame[i]));
+ document.querySelector('#wash stop').setAttribute('stop-color',palette.wash);
+ const H=580;
+ $('art').setAttribute('viewBox',`0 0 600 ${H}`);
+ $('art').style.aspectRatio='1 / 1';
+ $('design').replaceChildren();
+ panel($('design'),false,0);
+ panel($('design'),true,190);
+ $('marks').replaceChildren();
+ const W=100, PH=100;
+ const gx=3*600/W, gy=3*H/PH, lx=7*600/W, ly=7*H/PH;
+ for(const [x,y,sx,sy] of [[0,0,-1,-1],[600,0,1,-1],[0,H,-1,1],[600,H,1,1]]) {
+  shape('path',{d:`M${x+sx*gx},${y}h${sx*lx} M${x},${y+sy*gy}v${sy*ly}`},$('marks'));
+ }
+ document.documentElement.style.setProperty('--print-width',W+'mm');
+ document.documentElement.style.setProperty('--print-height',PH+'mm');
+ $('sizeLabel').textContent=`${W} × ${PH} mm`;
+ $('error').textContent=valid()?'':'購入点数・部数は1～10、値引き額は0～99999の整数で入力してください。';
+ $('print').disabled=queue.length===0&&!valid();
+ $('add').disabled=!valid()||!$('inputCopies').checkValidity();
+
+}
+$('inputCopies').addEventListener('input',render);
+document.querySelectorAll('[data-step]').forEach(button=>button.addEventListener('click',()=>{
+ const input=$(button.dataset.target);
+ const current=input.valueAsNumber;
+ input.value=String(Number.isFinite(current)?Math.min(10,Math.max(1,current+Number(button.dataset.step))):1);
+ render();
+}));
+// Do not restore previous input: every launch starts with empty editable fields.
+$('inputCopies').value='';
+for(const id of ids) {
+ $(id).value='';
+ $(id).setAttribute('autocomplete','off');
+ $(id).addEventListener('input',render);
+}
+window.addEventListener('pageshow',event=>{
+ if(event.persisted){ $('inputCopies').value=''; for(const id of ids) $(id).value=''; render(); }
+});
+
+// Every saved POP is a snapshot. Unique SVG IDs keep mixed-color copies independent.
+function copyArt(source){
+ const svg=source.cloneNode(true);
+ const prefix='pop'+(++cloneSerial)+'-';
+ const map=new Map();
+ for(const el of [svg,...svg.querySelectorAll('[id]')]){
+  if(el.id){map.set(el.id,prefix+el.id);el.id=prefix+el.id;}
+ }
+ for(const el of [svg,...svg.querySelectorAll('*')]){
+  for(const attr of [...el.attributes]){
+   let value=attr.value;
+   for(const [oldId,newId] of map){
+    value=value.replaceAll('url(#'+oldId+')','url(#'+newId+')');
+    if(value==='#'+oldId)value='#'+newId;
+   }
+   if(value!==attr.value)el.setAttribute(attr.name,value);
+  }
+ }
+ svg.removeAttribute('style');
+ return svg;
+}
+function buildPrint(){
+ const out=$('printOutput'); out.replaceChildren();
+ const sources=queue.length?queue.map(item=>item.svg):[$('art')];
+ for(let i=0;i<sources.length;i+=4){
+  const sheet=document.createElement('div');
+  sheet.className='print-sheet '+(queue.length?'grid':'single');
+  for(const source of sources.slice(i,i+4)){
+   const svg=copyArt(source);svg.classList.add('print-pop');sheet.append(svg);
+  }
+  out.append(sheet);
+ }
+ if(typeof pbFixPrintRed==='function')pbFixPrintRed(out);
+}
+function updateList(){
+ $('list').replaceChildren();
+ queue.forEach((item,index)=>{
+  const card=document.createElement('article');card.className='pop-card';
+  card.append(copyArt(item.svg));
+  const label=document.createElement('p');
+  label.textContent=(index+1)+'. '+item.name+' / '+(item.mode==='green'?'緑':'紫');
+  const remove=document.createElement('button');remove.type='button';remove.textContent='削除';
+  remove.setAttribute('aria-label',(index+1)+'枚目を削除');
+  remove.addEventListener('click',()=>{queue.splice(index,1);updateList();render();});
+  card.append(label,remove);$('list').append(card);
+ });
+ $('count').textContent=queue.length+'枚';
+ $('clear').hidden=!queue.length;
+ $('batchInfo').textContent=queue.length
+  ? 'A4 '+Math.ceil(queue.length/4)+'ページ・1ページ最大4枚（100×100mm／2列×2段）。追加した順に並びます。'
+  : 'まだ追加されていません。追加しない場合は、編集中のPOPをA4中央に1枚印刷します。';
+ $('notice').textContent=queue.length
+  ? '印刷対象：リストの'+queue.length+'枚。編集中の内容は「追加」を押すまで印刷対象に入りません。'
+  : '印刷対象：編集中のPOP 1枚';
+ $('print').textContent=queue.length?'リストを印刷・PDFに保存':'印刷・PDFに保存';
+ buildPrint();
+}
+function setColor(position,snap=false){
+ mode=position>=50?'green':'purple';
+ const value=snap?(mode==='green'?100:0):position;
+ $('colorSlider').value=String(value);
+ $('colorSwitch').style.setProperty('--progress',value/100);
+ $('colorSlider').setAttribute('aria-valuetext',mode==='green'?'緑':'紫');
+ render();
+}
+$('colorSlider').addEventListener('input',event=>setColor(Number(event.target.value)));
+$('colorSlider').addEventListener('change',event=>setColor(Number(event.target.value),true));
+$('colorSlider').addEventListener('keydown',event=>{
+ if(['ArrowLeft','ArrowDown','ArrowRight','ArrowUp','Home','End',' '].includes(event.key)){
+  event.preventDefault();
+  const value=event.key===' '? (mode==='green'?0:100)
+   : ['ArrowLeft','ArrowDown','Home'].includes(event.key)?0:100;
+  setColor(value,true);
+ }
+});
+$('add').addEventListener('click',()=>{
+ if(!valid()||!$('inputCopies').checkValidity())return;
+ if(!$('inputName').value.trim()||!$('inputQty').value||!$('inputDisc').value){
+  $('error').textContent='商品名・購入点数・値引き額を入力してから追加してください。';return;
+ }
+ render();
+ for(let i=0;i<Number($('inputCopies').value);i++) {
+  queue.push({svg:copyArt($('art')),name:$('inputName').value,mode});
+ }
+ $('inputCopies').value='';
+ for(const id of ids) $(id).value='';
+ render();
+ updateList();
+ $('inputName').focus();
+});
+$('clear').addEventListener('click',()=>{queue.length=0;updateList();render();});
+$('print').addEventListener('click',()=>{
+ if(queue.length||valid()){render();buildPrint();window.print();}
+});
+window.addEventListener('beforeprint',()=>{render();buildPrint();});
+document.fonts.ready.then(()=>{render();buildPrint();});
+render();
+updateList();
+</script>
+<script src="bundle-data.js"></script>
+<script>
+function pbFixPrintRed(root){
+ if(!root) return;
+ root.querySelectorAll('text').forEach(function(el){
+  var f=el.getAttribute('fill');
+  if(f&&f.indexOf('red')!==-1) el.setAttribute('fill','#e60019');
+ });
+}
+(function(){
+ var data=window.BUNDLE_DATA||[];
+ var meta=window.BUNDLE_META||null;
+ var byJan={};
+ data.forEach(function(d){ byJan[d.j]=d; });
+ var metaEl=document.getElementById('pbMeta');
+ if(metaEl) metaEl.textContent=meta?('対象データ：'+meta.month+'（全'+Number(meta.count).toLocaleString('ja-JP')+'件）'):'データが読み込めませんでした';
+ var current=null;
+ function fmtDate(s){ if(!s) return ''; var p=String(s).split('-'); if(p.length<3) return s; return Number(p[1])+'/'+Number(p[2]); }
+ function period(d){ return fmtDate(d.a)+'～'+fmtDate(d.b); }
+ function showNone(){
+  document.getElementById('pbResult').hidden=true;
+  document.getElementById('pbNone').hidden=false;
+  current=null;
+ }
+ function showResult(d){
+  current=d;
+  document.getElementById('pbNone').hidden=true;
+  document.getElementById('pbResult').hidden=false;
+  document.getElementById('pbRName').textContent=d.n;
+  document.getElementById('pbRPromo').textContent=d.p;
+  document.getElementById('pbRSection').textContent=d.s;
+  document.getElementById('pbRPeriod').textContent=period(d);
+  document.getElementById('pbRJan').textContent=d.j;
+  var kr=document.getElementById('pbRKikakuRow');
+  if(d.k){ kr.style.display=''; document.getElementById('pbRKikaku').textContent=d.k; }
+  else { kr.style.display='none'; }
+  document.getElementById('pbApplyNote').textContent='';
+ }
+ function lookup(raw){
+  var jan=(raw||'').replace(/\D/g,'');
+  if(!jan){ showNone(); return; }
+  var d=byJan[jan];
+  if(d) showResult(d); else showNone();
+ }
+ document.getElementById('pbLookup').addEventListener('click',function(){ lookup(document.getElementById('pbJan').value); });
+ document.getElementById('pbJan').addEventListener('keydown',function(e){ if(e.key==='Enter') lookup(e.target.value); });
+ document.getElementById('pbScan').addEventListener('click',function(){
+  var ret='https://ryosukekun129-ai.github.io/pop2/?scan={CODE}';
+  location.href='intent://scan/?ret='+encodeURIComponent(ret)+'&SCAN_FORMATS=EAN_13,EAN_8'+'#Intent;scheme=zxing;package=com.teacapps.barcodescanner;S.browser_fallback_url='+encodeURIComponent('https://ryosukekun129-ai.github.io/pop2/')+';end';
+ });
+ function doSearch(){
+  var q=document.getElementById('pbName').value.trim();
+  var box=document.getElementById('pbNames');
+  box.replaceChildren();
+  if(!q) return;
+  var hits=data.filter(function(d){ return d.n.indexOf(q)!==-1; }).slice(0,20);
+  if(!hits.length){
+   var p=document.createElement('p'); p.className='pb-note'; p.textContent='見つかりませんでした。'; box.append(p); return;
+  }
+  hits.forEach(function(d){
+   var b=document.createElement('button'); b.type='button'; b.className='pb-name-item';
+   b.textContent=d.n+'（'+d.p+'／'+period(d)+'）';
+   b.addEventListener('click',function(){ document.getElementById('pbJan').value=d.j; showResult(d); });
+   box.append(b);
+  });
+ }
+ document.getElementById('pbSearch').addEventListener('click',doSearch);
+ document.getElementById('pbName').addEventListener('keydown',function(e){ if(e.key==='Enter') doSearch(); });
+ function setField(id,val){
+  var el=document.getElementById(id); if(!el) return;
+  el.value=val;
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+  el.dispatchEvent(new Event('change',{bubbles:true}));
+ }
+ document.getElementById('pbApply').addEventListener('click',function(){
+  if(!current) return;
+  var d=current;
+  setField('inputName',d.n);
+  setField('inputCode',d.j);
+  var m=/^(\d+)個(\d+)円$/.exec(d.p||'');
+  var note=document.getElementById('pbApplyNote');
+  if(m){
+   setField('inputQty',m[1]);
+   setField('inputDisc',m[2]);
+   note.textContent='購入点数と値引き額も反映しました。';
+  } else {
+   note.textContent='この設定（'+d.p+'）は値引きPOPのデザインでは表せないため、商品名と商品コードだけ反映しました。特典内容は上の照合結果をご確認ください。';
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+ });
+ var q=new URLSearchParams(location.search).get('scan');
+ if(q){
+  document.getElementById('pbJan').value=q.replace(/\D/g,'');
+  lookup(q);
+  history.replaceState(null,'',location.pathname);
+ }
+ if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
+})();
+</script>
 </body>
 </html>
