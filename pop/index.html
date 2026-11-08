@@ -56,6 +56,28 @@ button{width:100%;border:0;border-radius:7px;padding:13px;background:#24683c;col
 .stepper input::-webkit-inner-spin-button,.stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .step-buttons{display:flex;flex-direction:column;gap:3px;width:44px;flex:none}.step-buttons button{padding:5px;min-height:36px;background:#e9f0ea;color:#24683c;font-size:19px;line-height:1}
 button:disabled{opacity:.45;cursor:not-allowed}
+
+#bundle{max-width:1152px;margin:24px auto 0;padding:24px;background:#fff;border:1px solid #dbe3dc;border-radius:12px}
+#bundle h2{font-size:20px;margin:0 0 6px}
+#scanBtn{width:100%;margin-top:14px;background:#24683c}
+.bundle-row{display:grid;grid-template-columns:1fr auto;gap:12px;margin-top:12px}
+.bundle-row button{width:auto;padding:10px 20px}
+.bundle-result{margin-top:16px;border:1px solid #dbe3dc;border-radius:8px;padding:16px;display:none}
+.bundle-result.show{display:block}
+.b-name{font-size:16px;font-weight:bold}
+.b-promo{font-size:24px;font-weight:900;color:#d6001c;margin:8px 0}
+.b-line{font-size:13px;color:#435347;margin:3px 0;line-height:1.7}
+#makePointPop{margin-top:14px}
+.search-results{margin-top:10px;display:grid;gap:8px}
+.search-hit{background:#eef4ee!important;color:#24683c!important;text-align:left;padding:10px!important;font-weight:normal!important}
+.type-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.type-switch button{background:#e9f0ea;color:#24683c;padding:11px}
+.type-switch button.active{background:#24683c;color:#fff}
+.point-only{display:none}
+body[data-poptype="point"] .point-only{display:block}
+body[data-poptype="point"] .disc-only{display:none}
+@media(max-width:760px){#bundle{margin:16px 14px 0;padding:16px}}
+@media print{#bundle{display:none!important}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#24683c">
@@ -64,16 +86,31 @@ button:disabled{opacity:.45;cursor:not-allowed}
 </head>
 <body>
 <header><h1>POP作成・印刷</h1><p>見本のレイアウトを保ったまま、商品名・点数・値引き額を変更できます。</p></header>
+<section id="bundle" aria-label="ポイントバンドル照合">
+<h2>ポイントバンドル照合</h2>
+<p class="hint" id="bundleMeta"></p>
+<button id="scanBtn" type="button">バーコードスキャン（TeaCapps）</button>
+<div class="bundle-row"><input id="inputJan" inputmode="numeric" placeholder="JANコードを入力" maxlength="13" autocomplete="off"><button id="lookupBtn" type="button">照合</button></div>
+<div class="bundle-row"><input id="inputSearch" placeholder="商品名で検索" autocomplete="off"><button id="searchBtn" type="button">検索</button></div>
+<div id="searchResults" class="search-results"></div>
+<div id="bundleResult" class="bundle-result"></div>
+</section>
 <main>
 <section class="controls" aria-label="POPの設定">
 <div class="mode-switch" id="colorSwitch">
 <span class="mode-green" aria-hidden="true"></span><span class="mode-thumb" aria-hidden="true"></span>
 <input id="colorSlider" type="range" min="0" max="100" step="1" value="100" aria-label="POPの色（左：紫、右：緑）" aria-valuetext="緑" title="左へスライドで紫、右へスライドで緑">
 </div>
+<div class="type-switch" role="group" aria-label="POPの種類">
+<button id="typeDisc" type="button" class="active">値引きPOP</button>
+<button id="typePoint" type="button">ポイントPOP</button>
+</div>
 <div class="field"><label for="inputName">商品名</label><input id="inputName" value="" maxlength="60"></div>
-<div class="field"><label for="inputVariant">種類の表示</label><input id="inputVariant" value="" maxlength="12"></div>
-<div class="row"><div class="field"><label for="inputQty">購入点数</label><div class="stepper"><input id="inputQty" type="number" min="1" max="10" step="1" value=""><div class="step-buttons"><button type="button" data-step="1" data-target="inputQty" aria-label="購入点数を増やす">＋</button><button type="button" data-step="-1" data-target="inputQty" aria-label="購入点数を減らす">−</button></div></div></div><div class="field"><label for="inputDisc">値引き額（円）</label><input id="inputDisc" type="number" min="0" max="99999" step="1" value=""></div></div>
-<div class="row"><div class="field"><label for="inputCode">商品コード</label><input id="inputCode" value="" maxlength="15"></div><div class="field"><label for="inputSubcode">補助コード</label><input id="inputSubcode" value="" maxlength="15"></div></div>
+<div class="field disc-only"><label for="inputVariant">種類の表示</label><input id="inputVariant" value="" maxlength="12"></div>
+<div class="row disc-only"><div class="field"><label for="inputQty">購入点数</label><div class="stepper"><input id="inputQty" type="number" min="1" max="10" step="1" value=""><div class="step-buttons"><button type="button" data-step="1" data-target="inputQty" aria-label="購入点数を増やす">＋</button><button type="button" data-step="-1" data-target="inputQty" aria-label="購入点数を減らす">−</button></div></div></div><div class="field"><label for="inputDisc">値引き額（円）</label><input id="inputDisc" type="number" min="0" max="99999" step="1" value=""></div></div>
+<div class="row disc-only"><div class="field"><label for="inputCode">商品コード</label><input id="inputCode" value="" maxlength="15"></div><div class="field"><label for="inputSubcode">補助コード</label><input id="inputSubcode" value="" maxlength="15"></div></div>
+<div class="field point-only"><label for="inputPointText">特典テキスト</label><input id="inputPointText" maxlength="30" placeholder="例：2個で100円分ポイント" autocomplete="off"></div>
+<div class="field point-only"><label for="inputPeriodText">期間テキスト</label><input id="inputPeriodText" maxlength="30" placeholder="例：11/1～11/30" autocomplete="off"></div>
 <div class="field"><label for="inputCopies">追加する部数（1〜10枚）</label><div class="stepper"><input id="inputCopies" type="number" min="1" max="10" step="1" value="" required><div class="step-buttons"><button type="button" data-step="1" data-target="inputCopies" aria-label="部数を増やす">＋</button><button type="button" data-step="-1" data-target="inputCopies" aria-label="部数を減らす">−</button></div></div><p class="hint">同じPOPを指定した枚数だけリストへ追加します。</p></div>
 <p id="error" class="status" role="status"></p>
 <button id="add" type="button">＋ 印刷リストに追加</button>
@@ -102,11 +139,14 @@ button:disabled{opacity:.45;cursor:not-allowed}
 <div id="list"></div>
 </section>
 <div id="printOutput" aria-hidden="true"></div>
+<script src="bundle-data.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const ns = 'http://www.w3.org/2000/svg';
 const ids = ['inputName','inputVariant','inputQty','inputDisc','inputCode','inputSubcode'];
 let mode='green';
+let popType='disc';
+function currentValid(){ return popType==='point' ? true : valid(); }
 const queue=[];
 let cloneSerial=0;
 const palettes={
@@ -160,6 +200,20 @@ function panel(parent,large,offset) {
  text(g,'引き!',large?534:526,large?295:139,large?53:55,large?32:22);
  text(g,NOTE,large?23:38,large?343:172,large?558:526,large?20:14,{weight:500});
 }
+function pointPanel(parent,large,offset) {
+ const g=shape('g',{transform:`translate(0 ${offset})`},parent);
+ const H=large?390:195;
+ shape('rect',{width:600,height:H,fill:'url(#green)'},g);
+ shape('rect',{x:large?12:6,y:large?17:5,width:large?576:588,height:large?360:183,fill:'url(#wash)'},g);
+ text(g,$('inputName').value,20,large?53:17,482,large?64:51,{stroke:'#101511',outline:4});
+ text(g,$('inputVariant').value,515,large?76:37,66,large?40:31,{stroke:'#101511',outline:4});
+ stars(g,large?150:66);
+ text(g,'ポイント',large?27:30,large?128:64,large?150:110,large?40:26,{fill:'#24683c',weight:900});
+ text(g,$('inputPointText').value,large?27:20,large?180:88,large?546:560,large?118:64,{family:'"Arial Black",Arial,sans-serif',weight:900,fill:'url(#red)'});
+ const per=$('inputPeriodText').value;
+ text(g,per?('期間：'+per):'',large?23:30,large?338:166,large?320:280,large?26:15,{weight:700});
+ text(g,'サンドラッグポイント',large?360:330,large?338:166,large?215:230,large?26:15,{weight:700,fill:'#24683c'});
+}
 function valid() { return ids.every(id=>!$(id).checkValidity||$(id).checkValidity()); }
 function render() {
  const palette=palettes[mode];
@@ -169,8 +223,8 @@ function render() {
  $('art').setAttribute('viewBox',`0 0 600 ${H}`);
  $('art').style.aspectRatio='1 / 1';
  $('design').replaceChildren();
- panel($('design'),false,0);
- panel($('design'),true,190);
+ if(popType==='point'){ pointPanel($('design'),false,0); pointPanel($('design'),true,190); }
+ else { panel($('design'),false,0); panel($('design'),true,190); }
  $('marks').replaceChildren();
  const W=100, PH=100;
  const gx=3*600/W, gy=3*H/PH, lx=7*600/W, ly=7*H/PH;
@@ -180,9 +234,9 @@ function render() {
  document.documentElement.style.setProperty('--print-width',W+'mm');
  document.documentElement.style.setProperty('--print-height',PH+'mm');
  $('sizeLabel').textContent=`${W} × ${PH} mm`;
- $('error').textContent=valid()?'':'購入点数・部数は1～10、値引き額は0～99999の整数で入力してください。';
- $('print').disabled=queue.length===0&&!valid();
- $('add').disabled=!valid()||!$('inputCopies').checkValidity();
+ $('error').textContent=currentValid()?'':'購入点数・部数は1～10、値引き額は0～99999の整数で入力してください。';
+ $('print').disabled=queue.length===0&&!currentValid();
+ $('add').disabled=!currentValid()||!$('inputCopies').checkValidity();
 
 }
 $('inputCopies').addEventListener('input',render);
@@ -242,7 +296,7 @@ function updateList(){
   const card=document.createElement('article');card.className='pop-card';
   card.append(copyArt(item.svg));
   const label=document.createElement('p');
-  label.textContent=(index+1)+'. '+item.name+' / '+(item.mode==='green'?'緑':'紫');
+  label.textContent=(index+1)+'. '+item.name+' / '+(item.mode==='green'?'緑':'紫')+' / '+(item.type==='point'?'ポイントPOP':'値引きPOP');
   const remove=document.createElement('button');remove.type='button';remove.textContent='削除';
   remove.setAttribute('aria-label',(index+1)+'枚目を削除');
   remove.addEventListener('click',()=>{queue.splice(index,1);updateList();render();});
@@ -278,26 +332,109 @@ $('colorSlider').addEventListener('keydown',event=>{
  }
 });
 $('add').addEventListener('click',()=>{
- if(!valid()||!$('inputCopies').checkValidity())return;
- if(!$('inputName').value.trim()||!$('inputQty').value||!$('inputDisc').value){
+ if(!currentValid()||!$('inputCopies').checkValidity())return;
+ if(popType==='point'){
+  if(!$('inputName').value.trim()||!$('inputPointText').value.trim()){
+   $('error').textContent='商品名・特典テキストを入力してから追加してください。';return;
+  }
+ } else if(!$('inputName').value.trim()||!$('inputQty').value||!$('inputDisc').value){
   $('error').textContent='商品名・購入点数・値引き額を入力してから追加してください。';return;
  }
  render();
  for(let i=0;i<Number($('inputCopies').value);i++) {
-  queue.push({svg:copyArt($('art')),name:$('inputName').value,mode});
+  queue.push({svg:copyArt($('art')),name:$('inputName').value,mode,type:popType});
  }
  $('inputCopies').value='';
  for(const id of ids) $(id).value='';
+ $('inputPointText').value=''; $('inputPeriodText').value='';
  render();
  updateList();
  $('inputName').focus();
 });
 $('clear').addEventListener('click',()=>{queue.length=0;updateList();render();});
 $('print').addEventListener('click',()=>{
- if(queue.length||valid()){render();buildPrint();window.print();}
+ if(queue.length||currentValid()){render();buildPrint();window.print();}
 });
 window.addEventListener('beforeprint',()=>{render();buildPrint();});
 document.fonts.ready.then(()=>{render();buildPrint();});
+// ---- POP type switch ----
+function setPopType(t){
+ popType=t;
+ document.body.dataset.poptype=t;
+ $('typeDisc').classList.toggle('active',t==='disc');
+ $('typePoint').classList.toggle('active',t==='point');
+ render();
+}
+$('typeDisc').addEventListener('click',()=>setPopType('disc'));
+$('typePoint').addEventListener('click',()=>setPopType('point'));
+document.body.dataset.poptype='disc';
+for(const id of ['inputPointText','inputPeriodText']) $(id).addEventListener('input',render);
+
+// ---- Point bundle lookup ----
+const BUNDLE_BY_JAN=new Map((window.BUNDLE_DATA||[]).map(r=>[r.j,r]));
+function fmtPeriod(a,b){ const f=x=>{const d=new Date(x+'T00:00:00');return (d.getMonth()+1)+'/'+d.getDate();}; return f(a)+'～'+f(b); }
+function bundleLine(text){ const d=document.createElement('div'); d.className='b-line'; d.textContent=text; return d; }
+function showBundle(rec,jan){
+ const box=$('bundleResult'); box.replaceChildren(); box.classList.add('show');
+ if(!rec){
+  const t=document.createElement('div'); t.className='b-name'; t.textContent='設定なし';
+  box.append(t, bundleLine('JAN '+jan+' は'+BUNDLE_META.month+'のデータ（全'+BUNDLE_META.count+'件）に載っていません。'));
+  return;
+ }
+ const name=document.createElement('div'); name.className='b-name'; name.textContent=rec.n;
+ const promo=document.createElement('div'); promo.className='b-promo'; promo.textContent=rec.p;
+ box.append(name,promo,bundleLine('種類：'+rec.s),bundleLine('期間：'+fmtPeriod(rec.a,rec.b)),bundleLine('JAN：'+rec.j));
+ if(rec.k) box.append(bundleLine('企画：'+rec.k));
+ const btn=document.createElement('button'); btn.type='button'; btn.id='makePointPop'; btn.textContent='この内容でポイントPOPを作る';
+ btn.addEventListener('click',()=>{
+  $('inputName').value=rec.n;
+  let pt=rec.p;
+  const m=pt.match(/^(\d+)個(\d+)円$/);
+  if(m) pt=m[1]+'個で'+m[2]+'円分ポイント';
+  else if(/^\d+ポイント$/.test(pt)) pt=pt+'プレゼント';
+  else if(/倍$/.test(pt)) pt='ポイント'+pt;
+  $('inputPointText').value=pt;
+  $('inputPeriodText').value=fmtPeriod(rec.a,rec.b);
+  setPopType('point');
+  document.querySelector('main').scrollIntoView({behavior:'smooth'});
+ });
+ box.append(btn);
+}
+function lookupJan(raw){
+ const jan=(raw||'').replace(/\D/g,'');
+ const box=$('bundleResult');
+ if(jan.length<8){ box.replaceChildren(); box.classList.add('show'); box.append(bundleLine('JANコードを入力してください。')); return; }
+ showBundle(BUNDLE_BY_JAN.get(jan),jan);
+}
+$('lookupBtn').addEventListener('click',()=>lookupJan($('inputJan').value));
+$('inputJan').addEventListener('keydown',e=>{ if(e.key==='Enter') lookupJan($('inputJan').value); });
+function searchBundle(){
+ const q=$('inputSearch').value.trim();
+ const box=$('searchResults'); box.replaceChildren();
+ if(!q) return;
+ const hits=(window.BUNDLE_DATA||[]).filter(r=>r.n.includes(q)).slice(0,20);
+ if(!hits.length){ box.append(bundleLine('見つかりませんでした。')); return; }
+ for(const r of hits){
+  const b=document.createElement('button'); b.type='button'; b.className='search-hit';
+  b.textContent=r.n+'（'+r.p+'／'+fmtPeriod(r.a,r.b)+'）';
+  b.addEventListener('click',()=>showBundle(r,r.j));
+  box.append(b);
+ }
+}
+$('searchBtn').addEventListener('click',searchBundle);
+$('inputSearch').addEventListener('keydown',e=>{ if(e.key==='Enter') searchBundle(); });
+$('bundleMeta').textContent='データ：'+BUNDLE_META.month+'・全'+BUNDLE_META.count+'件（毎月のPDFから更新）';
+$('scanBtn').addEventListener('click',()=>{
+ const ret='https://ryosukekun129-ai.github.io/pop/?scan={CODE}';
+ location.href='intent://scan/?ret='+encodeURIComponent(ret)+'&SCAN_FORMATS=EAN_13,EAN_8'+
+  '#Intent;scheme=zxing;package=com.teacapps.barcodescanner;S.browser_fallback_url='+
+  encodeURIComponent('https://ryosukekun129-ai.github.io/pop/')+';end';
+});
+(function(){
+ const q=new URLSearchParams(location.search).get('scan');
+ if(q){ $('inputJan').value=q; lookupJan(q); history.replaceState(null,'',location.pathname); }
+})();
+
 render();
 updateList();
 </script>
