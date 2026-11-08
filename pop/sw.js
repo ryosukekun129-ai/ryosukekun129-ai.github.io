@@ -1,4 +1,4 @@
-const CACHE = "pop-v2-20261109";
+const CACHE = "pop-v3-20261109";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./bundle-data.js"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
