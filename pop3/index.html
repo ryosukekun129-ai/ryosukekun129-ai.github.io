@@ -235,7 +235,7 @@ function starburst(parent,cx,cy,rx,ry,spikes) {
  const n=spikes*2;
  for(let i=0;i<=n;i++){
   const a=Math.PI*i/spikes-Math.PI/2;
-  const r=i%2===0?1:.4;
+  const r=i%2===0?1:.38;
   d+=(i===0?'M':'L')+(cx+Math.cos(a)*rx*r).toFixed(1)+' '+(cy+Math.sin(a)*ry*r).toFixed(1);
  }
  shape('path',{d:d+'Z',fill:'#ffffff',opacity:.96},parent);
@@ -261,36 +261,36 @@ function pointPanel(parent,large,offset) {
  const H=large?390:195;
  shape('rect',{width:600,height:H,fill:'url(#wash)'},g);
  shape('rect',{x:large?9:5,y:large?9:5,width:large?582:590,height:large?372:185,fill:'none',stroke:'url(#green)','stroke-width':large?3:2},g);
- const ls=large?1.15:.6;
- leafCluster(g,large?13:7,large?13:7,ls,1,1);
- leafCluster(g,large?587:593,large?13:7,ls,-1,1);
- leafCluster(g,large?13:7,large?377:188,ls,1,-1);
- leafCluster(g,large?587:593,large?377:188,ls,-1,-1);
- text(g,$('inputName').value,20,large?26:9,470,large?56:40,{stroke:'#101511',outline:4});
- text(g,$('inputVariant').value,508,large?40:20,74,large?40:30,{stroke:'#101511',outline:4});
- text(g,'サンドラッグポイント',large?92:84,large?98:60,large?400:384,large?50:34,{weight:900});
- handIcon(g,large?504:480,large?92:54,large?.62:.4);
+ const ls=large?.95:.48;
+ leafCluster(g,large?10:6,large?10:6,ls,1,1);
+ leafCluster(g,large?590:594,large?10:6,ls,-1,1);
+ leafCluster(g,large?10:6,large?380:189,ls,1,-1);
+ leafCluster(g,large?590:594,large?380:189,ls,-1,-1);
+ text(g,$('inputName').value,20,large?14:9,470,large?50:40,{stroke:'#101511',outline:4});
+ text(g,$('inputVariant').value,508,large?26:20,74,large?40:30,{stroke:'#101511',outline:4});
+ text(g,'サンドラッグポイント',large?70:64,large?74:58,large?420:420,large?44:32,{weight:900});
+ handIcon(g,large?500:500,large?72:64,large?.65:.55);
  const pt=$('inputPointText').value;
  const m=pt.match(/(\d+)\s*倍/);
- starburst(g,300,large?250:124,large?292:288,large?102:48,14);
+ starburst(g,300,large?242:140,large?295:292,large?115:42,16);
  if(m){
-  text(g,'ポイント',large?34:28,large?120:92,large?128:106,large?38:28,{fill:'#e60019',weight:900});
-  text(g,'＋',large?40:36,large?252:126,large?60:44,large?60:44,{fill:'url(#red)',family:'"Arial Black",Arial,sans-serif',weight:900});
-  text(g,m[1],large?180:140,large?136:84,large?220:194,large?186:90,{family:'"Arial Black",Arial,sans-serif',weight:900,fill:'url(#red)'});
-  text(g,'倍',large?418:352,large?258:126,large?62:50,large?62:50,{fill:'#e60019',weight:900});
+  text(g,'ポイント',large?32:32,large?128:108,large?100:94,large?34:24,{fill:'#e60019',weight:900});
+  text(g,'＋',large?36:38,large?256:138,large?60:56,large?60:38,{fill:'url(#red)',family:'"Arial Black",Arial,sans-serif',weight:900});
+  text(g,m[1],large?240:243,large?142:98,large?180:173,large?178:74,{family:'"Arial Black",Arial,sans-serif',weight:900,fill:'url(#red)'});
+  text(g,'倍',large?505:507,large?262:134,large?64:62,large?60:40,{fill:'#e60019',weight:900});
  } else if(pt.trim()){
-  text(g,pt,large?70:56,large?164:88,large?460:488,large?118:66,{family:'"Arial Black",Arial,sans-serif',weight:900,fill:'url(#red)'});
+  text(g,pt,large?70:56,large?164:96,large?460:488,large?118:62,{family:'"Arial Black",Arial,sans-serif',weight:900,fill:'url(#red)'});
  }
- text(g,'※',large?288:302,large?345:168,large?20:16,large?20:13,{weight:700});
- pointLogo(g,large?322:332,large?355:175,large?1:.75);
- text(g,'当社ポイントカードが対象です。',large?338:348,large?345:168,large?242:232,large?20:13,{weight:700});
+ text(g,'※',large?292:268,large?354:174,large?18:14,large?17:13,{weight:700});
+ pointLogo(g,large?320:290,large?362:180,large?.85:.65);
+ text(g,'当社ポイントカードが対象です。',large?334:306,large?354:174,large?246:276,large?17:13,{weight:700});
  const per=$('inputPeriodText').value;
  if(large){
-  text(g,$('inputCode').value,22,316,54,19,{weight:700});
-  text(g,$('inputSubcode').value,22,339,42,14,{weight:700});
-  text(g,per?('期間：'+per):'',92,345,190,16,{weight:500});
+  text(g,'4706',80,326,52,20,{weight:700});
+  text(g,'K-1',80,352,40,15,{weight:700});
+  text(g,per?('期間：'+per):'',148,352,138,15,{weight:500});
  } else {
-  text(g,per?('期間：'+per):'',22,168,262,13,{weight:500});
+  text(g,per?('期間：'+per):'',22,178,230,11,{weight:500});
  }
 }
 function bpPanel(parent,large,offset) {
@@ -305,33 +305,31 @@ function bpPanel(parent,large,offset) {
  const num={family:'"Arial Black",Arial,sans-serif',weight:900};
  text(g,q,large?27:58,large?213:85,large?62:38,large?107:76,num);
  text(g,'点',large?97:129,large?293:137,large?27:24,large?31:25);
- shape('ellipse',{cx:large?235:250,cy:large?240:110,rx:large?122:95,ry:large?92:45,fill:'url(#blue)'},g);
+ shape('ellipse',{cx:large?235:250,cy:large?238:107,rx:large?122:95,ry:large?88:45,fill:'url(#blue)'},g);
  const badge={fill:'#fff',family:'"Yu Mincho","MS Mincho",serif',stroke:'#183f80',outline:9};
- text(g,'同時',large?150:188,large?164:72,large?170:124,large?62:34,badge);
- text(g,'購入で!',large?140:180,large?232:106,large?190:140,large?66:38,badge);
+ text(g,'同時',large?150:190,large?164:74,large?170:124,large?62:30,badge);
+ text(g,'購入で!',large?140:182,large?232:103,large?190:140,large?66:34,badge);
  const bt=$('inputBPText').value;
  const m=bt.match(/^(\d+)(円分)?ポイント(進呈)?$/);
- text(g,'サンドラッグポイント',large?330:336,large?98:42,large?246:238,large?27:19,{weight:900});
+ text(g,'サンドラッグポイント',large?336:336,large?122:70,large?240:240,large?26:19,{weight:900});
  if(m){
-  text(g,m[1],large?322:336,large?138:66,large?195:168,large?152:78,{...num,fill:'url(#red)'});
-  text(g,m[2]?'円分ポイント進呈':'ポイント進呈',large?424:448,large?286:140,large?152:130,large?34:21,{weight:900});
+  text(g,m[1],large?372:380,large?148:92,large?168:160,large?144:60,{...num,fill:'url(#red)'});
+  text(g,m[2]?'円分ポイント進呈':'ポイント進呈',large?430:452,large?294:142,large?146:126,large?30:20,{weight:900});
  } else if(bt.trim()){
-  text(g,bt,large?322:336,large?148:74,large?250:238,large?120:68,{...num,fill:'url(#red)'});
+  text(g,bt,large?372:380,large?158:92,large?168:160,large?110:60,{...num,fill:'url(#red)'});
   text(g,'進呈',large?498:478,large?290:142,large?74:82,large?34:21,{fill:'#df1830',weight:900});
  }
  const per=$('inputPeriodText').value;
  if(large){
-  text(g,$('inputCode').value,16,322,50,22,{weight:700});
-  text(g,$('inputSubcode').value,16,348,44,16,{weight:700});
+  text(g,'1415',16,322,50,22,{weight:700});
+  text(g,'K-1',16,348,44,16,{weight:700});
   text(g,per?('期間：'+per):'',22,124,290,15,{weight:500});
- } else {
-  text(g,per?('期間：'+per):'',14,132,128,11,{weight:500});
  }
  const qtyN=parseInt(q,10), ptsN=m?parseInt(m[1],10):NaN;
  let line1='';
  if(m&&qtyN>0) line1='※1会計最大10点 '+(Math.round(ptsN*10/qtyN))+(m[2]?'円分ポイント':'ポイント')+'までです。';
- text(g,line1,large?76:70,large?324:150,large?500:505,large?18:13,{weight:700});
- text(g,'※当社ポイントカードが対象です',large?76:70,large?348:168,large?500:505,large?18:13,{weight:700});
+ text(g,line1,large?76:70,large?328:164,large?500:505,large?18:11,{weight:700});
+ text(g,'※当社ポイントカードが対象です',large?76:70,large?350:177,large?500:505,large?18:11,{weight:700});
 }
 function valid() { return ids.every(id=>!$(id).checkValidity||$(id).checkValidity()); }
 function render() {
