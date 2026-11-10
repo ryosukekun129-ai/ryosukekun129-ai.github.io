@@ -79,7 +79,7 @@ dialog::backdrop{background:#0005}dialog h2{margin-top:0;font-size:20px}.dialog-
 /* === 追加機能: ポイントバンドル照合セクション（デザイン本体とは独立） === */
 #bundle{max-width:1152px;margin:24px auto 0;padding:24px;background:#fff;border:1px solid #dbe3dc;border-radius:12px}
 #bundle h2{font-size:20px;margin:0 0 6px}
-#scanBtn{width:100%;margin-top:14px;background:#24683c}
+#scanBtn{width:100%;margin-top:14px;background:var(--accent)}#scanBtn:hover{background:var(--hover)}
 .bundle-row{display:grid;grid-template-columns:1fr auto;gap:12px;margin-top:12px}
 .bundle-row button{width:auto;padding:10px 20px}
 .bundle-result{margin-top:16px;border:1px solid #dbe3dc;border-radius:8px;padding:16px;display:none}
@@ -88,7 +88,7 @@ dialog::backdrop{background:#0005}dialog h2{margin-top:0;font-size:20px}.dialog-
 .b-promo{font-size:24px;font-weight:900;color:#d6001c;margin:8px 0}
 .b-line{font-size:13px;color:#435347;margin:3px 0;line-height:1.7}
 .search-results{margin-top:10px;display:grid;gap:8px}
-.search-hit{background:#eef4ee!important;color:#24683c!important;text-align:left;padding:10px!important;font-weight:normal!important}
+.search-hit{background:var(--soft)!important;color:var(--accent)!important;text-align:left;padding:10px!important;font-weight:normal!important}
 @media(max-width:760px){#bundle{margin:16px 14px 0;padding:16px}}
 @media print{#bundle{display:none!important}}
 </style>
@@ -534,6 +534,7 @@ function applyToPop(rec,box){
   box.append(bundleLine('特典「'+rec.p+'」は旧デザインの3種へ自動で当てはめられませんでした。商品名だけセットします。種類と数字は手入力してください。'));
  }
  $('inputName').value=rec.n;
+ if(!$('inputCopies').value) $('inputCopies').value='1';
  render();
  document.querySelector('main').scrollIntoView({behavior:'smooth'});
 }
@@ -552,6 +553,10 @@ function showBundle(rec,jan){
  btn.addEventListener('click',()=>applyToPop(rec,box));
  box.append(btn);
 }
+const themeMeta=document.querySelector('meta[name="theme-color"]');
+function syncThemeColor(){ if(themeMeta) themeMeta.setAttribute('content',document.documentElement.dataset.theme==='purple'?'#79559e':'#24683c'); }
+new MutationObserver(syncThemeColor).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+syncThemeColor();
 function lookupJan(raw){
  const jan=(raw||'').replace(/\D/g,'');
  const box=$('bundleResult');
