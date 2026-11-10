@@ -218,19 +218,80 @@ function panel(parent,large,offset) {
  text(g,'引き!',large?534:526,large?295:139,large?53:55,large?32:22);
  text(g,NOTE,large?23:38,large?343:172,large?558:526,large?20:14,{weight:500});
 }
+function leafCluster(parent,x,y,s,fx,fy) {
+ const g=shape('g',{transform:`translate(${x} ${y}) scale(${fx*s} ${fy*s})`},parent);
+ const cols=[palettes[mode].star,palettes[mode].frame[2],palettes[mode].star];
+ const leaf='M0 0 C 9 -17, 23 -23, 36 -20 C 33 -5, 19 3, 0 0 Z';
+ const vein='M3 -3 C 13 -11, 23 -16, 31 -18';
+ [[0,0,-32],[15,9,-68],[31,3,-12],[7,23,-52],[27,21,-30],[45,11,-46],[18,32,-38]].forEach(([dx,dy,r],i)=>{
+  const lg=shape('g',{transform:`translate(${dx} ${dy}) rotate(${r})`},g);
+  shape('path',{d:leaf,fill:cols[i%3],opacity:.7},lg);
+  shape('path',{d:vein,fill:'none',stroke:palettes[mode].frame[1],'stroke-width':1.6,opacity:.5},lg);
+ });
+ return g;
+}
+function starburst(parent,cx,cy,rx,ry,spikes) {
+ let d='';
+ const n=spikes*2;
+ for(let i=0;i<=n;i++){
+  const a=Math.PI*i/spikes-Math.PI/2;
+  const r=i%2===0?1:.4;
+  d+=(i===0?'M':'L')+(cx+Math.cos(a)*rx*r).toFixed(1)+' '+(cy+Math.sin(a)*ry*r).toFixed(1);
+ }
+ shape('path',{d:d+'Z',fill:'#ffffff',opacity:.96},parent);
+}
+function handIcon(parent,x,y,s) {
+ const g=shape('g',{transform:`translate(${x} ${y}) scale(${s})`},parent);
+ const w={fill:'#fff',stroke:'#222','stroke-width':5,'stroke-linejoin':'round','stroke-linecap':'round'};
+ shape('rect',{x:40,y:2,width:17,height:52,rx:8,transform:'rotate(-9 48 28)',...w},g);
+ shape('rect',{x:6,y:50,width:27,height:14,rx:7,transform:'rotate(40 19 57)',...w},g);
+ shape('ellipse',{cx:53,cy:69,rx:27,ry:23,...w},g);
+ shape('path',{d:'M43 60 v15 M56 58 v16 M68 60 v13',stroke:'#222','stroke-width':3.4,fill:'none','stroke-linecap':'round'},g);
+ shape('rect',{x:33,y:85,width:40,height:13,rx:4,...w},g);
+ return g;
+}
+function pointLogo(parent,x,y,s) {
+ const g=shape('g',{transform:`translate(${x} ${y}) scale(${s})`},parent);
+ const cols=['#f5c400','#e60019','#2b3a9e'];
+ for(let i=0;i<3;i++) shape('path',{d:'M0 -9 C 6 -9, 9.5 -4.5, 9.5 0 C 9.5 3.4, 6.8 5.6, 3.4 5.4 C 7.2 1.2, 5.4 -5.4, 0 -9 Z',fill:cols[i],transform:`rotate(${i*120})`},g);
+ return g;
+}
 function pointPanel(parent,large,offset) {
  const g=shape('g',{transform:`translate(0 ${offset})`},parent);
  const H=large?390:195;
- shape('rect',{width:600,height:H,fill:'url(#green)'},g);
- shape('rect',{x:large?12:6,y:large?17:5,width:large?576:588,height:large?360:183,fill:'url(#wash)'},g);
- text(g,$('inputName').value,20,large?53:17,482,large?64:51,{stroke:'#101511',outline:4});
- text(g,$('inputVariant').value,515,large?76:37,66,large?40:31,{stroke:'#101511',outline:4});
- stars(g,large?150:66);
- text(g,'ポイント',large?27:30,large?128:64,large?150:110,large?40:26,{fill:'#24683c',weight:900});
- text(g,$('inputPointText').value,large?27:20,large?180:88,large?546:560,large?118:64,{family:'"Arial Black",Arial,sans-serif',weight:900,fill:'url(#red)'});
+ shape('rect',{width:600,height:H,fill:'url(#wash)'},g);
+ shape('rect',{x:large?9:5,y:large?9:5,width:large?582:590,height:large?372:185,fill:'none',stroke:'url(#green)','stroke-width':large?3:2},g);
+ const ls=large?1.15:.6;
+ leafCluster(g,large?13:7,large?13:7,ls,1,1);
+ leafCluster(g,large?587:593,large?13:7,ls,-1,1);
+ leafCluster(g,large?13:7,large?377:188,ls,1,-1);
+ leafCluster(g,large?587:593,large?377:188,ls,-1,-1);
+ text(g,$('inputName').value,20,large?26:9,470,large?56:40,{stroke:'#101511',outline:4});
+ text(g,$('inputVariant').value,508,large?40:20,74,large?40:30,{stroke:'#101511',outline:4});
+ text(g,'サンドラッグポイント',large?92:84,large?98:60,large?400:384,large?50:34,{weight:900});
+ handIcon(g,large?504:480,large?92:54,large?.62:.4);
+ const pt=$('inputPointText').value;
+ const m=pt.match(/(\d+)\s*倍/);
+ starburst(g,300,large?250:124,large?292:288,large?102:48,14);
+ if(m){
+  text(g,'ポイント',large?34:28,large?120:92,large?128:106,large?38:28,{fill:'#e60019',weight:900});
+  text(g,'＋',large?40:36,large?252:126,large?60:44,large?60:44,{fill:'url(#red)',family:'"Arial Black",Arial,sans-serif',weight:900});
+  text(g,m[1],large?180:140,large?136:84,large?220:194,large?186:90,{family:'"Arial Black",Arial,sans-serif',weight:900,fill:'url(#red)'});
+  text(g,'倍',large?418:352,large?258:126,large?62:50,large?62:50,{fill:'#e60019',weight:900});
+ } else if(pt.trim()){
+  text(g,pt,large?70:56,large?164:88,large?460:488,large?118:66,{family:'"Arial Black",Arial,sans-serif',weight:900,fill:'url(#red)'});
+ }
+ text(g,'※',large?288:302,large?345:168,large?20:16,large?20:13,{weight:700});
+ pointLogo(g,large?322:332,large?355:175,large?1:.75);
+ text(g,'当社ポイントカードが対象です。',large?338:348,large?345:168,large?242:232,large?20:13,{weight:700});
  const per=$('inputPeriodText').value;
- text(g,per?('期間：'+per):'',large?23:30,large?338:166,large?320:280,large?26:15,{weight:700});
- text(g,'サンドラッグポイント',large?360:330,large?338:166,large?215:230,large?26:15,{weight:700,fill:'#24683c'});
+ if(large){
+  text(g,$('inputCode').value,22,316,54,19,{weight:700});
+  text(g,$('inputSubcode').value,22,339,42,14,{weight:700});
+  text(g,per?('期間：'+per):'',92,345,190,16,{weight:500});
+ } else {
+  text(g,per?('期間：'+per):'',22,168,262,13,{weight:500});
+ }
 }
 function bpPanel(parent,large,offset) {
  const g=shape('g',{transform:`translate(0 ${offset})`},parent);
@@ -239,14 +300,38 @@ function bpPanel(parent,large,offset) {
  shape('rect',{x:large?12:6,y:large?17:5,width:large?576:588,height:large?360:183,fill:'url(#wash)'},g);
  text(g,$('inputName').value,20,large?53:17,482,large?64:51,{stroke:'#101511',outline:4});
  text(g,$('inputVariant').value,515,large?76:37,66,large?40:31,{stroke:'#101511',outline:4});
- stars(g,large?150:66);
+ if(large) stars(g,187); else stars(g,79);
  const q=$('inputBPQty').value;
- text(g,q?(q+'点購入で'):'',large?27:30,large?128:64,large?230:170,large?44:28,{fill:'#101511',weight:900});
- text(g,$('inputBPText').value,large?27:20,large?180:88,large?546:560,large?118:64,{family:'"Arial Black",Arial,sans-serif',weight:900,fill:'url(#red)'});
- text(g,'進呈',large?500:480,large?300:140,large?70:80,large?36:22,{fill:'#df1830',weight:900});
+ const num={family:'"Arial Black",Arial,sans-serif',weight:900};
+ text(g,q,large?27:58,large?213:85,large?62:38,large?107:76,num);
+ text(g,'点',large?97:129,large?293:137,large?27:24,large?31:25);
+ shape('ellipse',{cx:large?235:250,cy:large?240:110,rx:large?122:95,ry:large?92:45,fill:'url(#blue)'},g);
+ const badge={fill:'#fff',family:'"Yu Mincho","MS Mincho",serif',stroke:'#183f80',outline:9};
+ text(g,'同時',large?150:188,large?164:72,large?170:124,large?62:34,badge);
+ text(g,'購入で!',large?140:180,large?232:106,large?190:140,large?66:38,badge);
+ const bt=$('inputBPText').value;
+ const m=bt.match(/^(\d+)(円分)?ポイント(進呈)?$/);
+ text(g,'サンドラッグポイント',large?330:336,large?98:42,large?246:238,large?27:19,{weight:900});
+ if(m){
+  text(g,m[1],large?322:336,large?138:66,large?195:168,large?152:78,{...num,fill:'url(#red)'});
+  text(g,m[2]?'円分ポイント進呈':'ポイント進呈',large?424:448,large?286:140,large?152:130,large?34:21,{weight:900});
+ } else if(bt.trim()){
+  text(g,bt,large?322:336,large?148:74,large?250:238,large?120:68,{...num,fill:'url(#red)'});
+  text(g,'進呈',large?498:478,large?290:142,large?74:82,large?34:21,{fill:'#df1830',weight:900});
+ }
  const per=$('inputPeriodText').value;
- text(g,per?('期間：'+per):'',large?23:30,large?338:166,large?320:280,large?26:15,{weight:700});
- text(g,'サンドラッグポイント',large?360:330,large?338:166,large?215:230,large?26:15,{weight:700,fill:'#24683c'});
+ if(large){
+  text(g,$('inputCode').value,16,322,50,22,{weight:700});
+  text(g,$('inputSubcode').value,16,348,44,16,{weight:700});
+  text(g,per?('期間：'+per):'',22,124,290,15,{weight:500});
+ } else {
+  text(g,per?('期間：'+per):'',14,132,128,11,{weight:500});
+ }
+ const qtyN=parseInt(q,10), ptsN=m?parseInt(m[1],10):NaN;
+ let line1='';
+ if(m&&qtyN>0) line1='※1会計最大10点 '+(Math.round(ptsN*10/qtyN))+(m[2]?'円分ポイント':'ポイント')+'までです。';
+ text(g,line1,large?76:70,large?324:150,large?500:505,large?18:13,{weight:700});
+ text(g,'※当社ポイントカードが対象です',large?76:70,large?348:168,large?500:505,large?18:13,{weight:700});
 }
 function valid() { return ids.every(id=>!$(id).checkValidity||$(id).checkValidity()); }
 function render() {
