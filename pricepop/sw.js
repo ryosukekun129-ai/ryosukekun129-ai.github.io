@@ -1,5 +1,5 @@
-const CACHE = "pricepop-v1-20261113";
-const ASSETS = ["./", "./index.html", "./jandb.js", "./manifest.webmanifest", "./icon.svg"];
+const CACHE = "pricepop-v2-20261113";
+const ASSETS = ["./", "./index.html", "./jandb.js", "./templates.js", "./manifest.webmanifest", "./icon.svg"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });

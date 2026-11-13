@@ -149,6 +149,7 @@ textarea{resize:vertical;min-height:56px;line-height:1.35}
 </div>
 <div id="printArea"></div>
 <script src="jandb.js"></script>
+<script src="templates.js"></script>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -240,83 +241,35 @@ function nameLines(f){
 }
 
 function buildPOP(f){
-  const W=600,H=800, framed=(f.type!=="tokusen");
   const lines=nameLines(f);
   const incl=f.price===""?"":taxIncl(f.price,f.tax);
-  let s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">';
-  s+='<rect x="0" y="0" width="600" height="800" fill="#fff"/>';
-  /* スターバースト（本文エリア） */
-  s+='<g clip-path="url(#bodyClip)">'+burst(430,600,400,120,16,11)+burst(300,760,360,110,14,29)+'</g>';
-  s+='<defs><clipPath id="bodyClip"><rect x="'+(framed?16:0)+'" y="160" width="'+(framed?568:600)+'" height="'+(framed?624:640)+'"/></clipPath></defs>';
-
-  /* ヘッダー */
-  if(f.type==="tokusen"){
-    s+='<rect x="0" y="0" width="600" height="160" fill="'+RED+'"/>';
-    s+=sundrugLogo();
-    s+='<g transform="translate(368,80)">'+burst(0,0,215,60,12,5)+'</g>';
-    s+='<text x="372" y="112" text-anchor="middle" font-family="'+F_GOTHIC+'" font-weight="900" font-size="104" fill="#000" transform="translate(6,7)">特選品</text>';
-    s+='<text x="372" y="112" text-anchor="middle" font-family="'+F_GOTHIC+'" font-weight="900" font-size="104" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke">特選品</text>';
-  }else{
-    s+='<rect x="0" y="0" width="600" height="160" fill="'+RED+'"/>';
-    if(f.type==="okaidoku"){
-      s+='<text x="300" y="120" text-anchor="middle" font-family="'+F_GOTHIC+'" font-weight="900" font-size="112" fill="#fff" letter-spacing="4">お買得品</text>';
-    }else{
-      s+='<text x="300" y="120" text-anchor="middle" font-family="'+F_ROUND+'" font-weight="900" font-size="112" fill="#fff" letter-spacing="6">広告の品</text>';
+  let s=window.TPL[f.type];
+  const rep=(key,val)=>{ s=s.split("{{"+key+"}}").join(esc(val)); };
+  rep("CATCH", f.catch||"");
+  rep("NAME1", lines[0]||"");
+  rep("NAME2", lines[1]||"");
+  rep("SPEC", f.spec?toHalf(f.spec):"");
+  rep("PRICE", f.price===""?"000":String(f.price));
+  rep("TAXPRICE", incl===""?"":String(incl));
+  rep("KAKU", f.kakushu?"\u5404":"");
+  if(f.type==="okaidoku"){
+    const on=f.kiboOn&&f.kibo!=="";
+    rep("KIBOLABEL", on?"\u5e0c\u671b\u5c0f\u58f2\u4fa1\u683c":"");
+    rep("KIBOSUB", on?"\u7a0e\u629c":"");
+    rep("KIBO", on?String(f.kibo):"");
+    rep("KIBOEN", on?"\u5186":"");
+    if(f.kakushu){
+      s=s.replace("</g>\n</svg>", '<text x="16" y="560" font-family="sans-serif" font-weight="900" font-size="40" fill="#E60012" stroke="#000" stroke-width="3" paint-order="stroke fill">\u5404</text></g>\n</svg>');
     }
   }
-
-  /* キャッチコピー */
-  let nameY=lines.length>1?318:330;
-  if(f.catch){
-    s+='<text x="48" y="222" font-family="'+F_GOTHIC+'" font-weight="700" font-size="41" fill="'+BLUE+'">'+esc(f.catch)+'</text>';
-    nameY=lines.length>1?330:342;
-  }
-  /* 商品名 */
-  const nameSize=lines.length>1?88:100;
-  lines.forEach((ln,i)=>{
-    s+='<text x="46" y="'+(nameY+i*(nameSize+16))+'" font-family="'+F_GOTHIC+'" font-weight="900" font-size="'+nameSize+'" fill="#000" textLength="508" lengthAdjust="spacingAndGlyphs">'+esc(ln)+'</text>';
-  });
-  let curY=nameY+lines.length*(nameSize+16)-22;
-  /* 規格 */
-  if(f.spec){
-    s+='<text x="48" y="'+(curY+52)+'" font-family="'+F_GOTHIC+'" font-weight="900" font-size="52" fill="'+GREEN+'">'+esc(toHalf(f.spec))+'</text>';
-    curY+=58;
-  }
-  /* 希望小売価格 */
-  if(f.kiboOn && f.kibo!==""){
-    s+='<text x="48" y="'+(curY+58)+'" font-family="'+F_GOTHIC+'" font-weight="900" font-size="35" fill="#000">希望小売価格</text>';
-    s+='<text x="252" y="'+(curY+58)+'" font-family="'+F_GOTHIC+'" font-weight="700" font-size="30" fill="'+GREEN+'">税抜</text>';
-    s+='<text x="300" y="'+(curY+62)+'" font-family="'+F_GOTHIC+'" font-weight="900" font-size="62" fill="'+GREEN+'">'+esc(f.kibo)+'<tspan font-size="34">円</tspan></text>';
-  }
-
-  /* 価格 */
-  const priceStr=f.price===""?"000":String(f.price);
-  const pw=Math.min(430, 118*priceStr.length+90);
-  s+='<text x="'+(600-70-pw)+'" y="706" font-family="'+F_GOTHIC+'" font-weight="900" font-size="295" fill="'+RED+'" stroke="#000" stroke-width="7" paint-order="stroke" textLength="'+pw+'" lengthAdjust="spacingAndGlyphs">'+esc(priceStr)+'</text>';
-  s+='<text x="512" y="706" font-family="'+F_GOTHIC+'" font-weight="900" font-size="86" fill="'+RED+'" stroke="#000" stroke-width="5" paint-order="stroke">円</text>';
-
-  /* 本体価格ラベル（各種は上に赤い「各」） */
-  if(f.kakushu){
-    s+='<text x="52" y="592" font-family="'+F_GOTHIC+'" font-weight="900" font-size="56" fill="'+RED+'" stroke="#fff" stroke-width="8" paint-order="stroke">各</text>';
-  }
-  s+='<text x="48" y="652" font-family="'+F_GOTHIC+'" font-weight="900" font-size="54" fill="#000" stroke="#fff" stroke-width="9" paint-order="stroke">本体</text>';
-  s+='<text x="48" y="710" font-family="'+F_GOTHIC+'" font-weight="900" font-size="54" fill="#000" stroke="#fff" stroke-width="9" paint-order="stroke">価格</text>';
-
-  /* 税込 */
-  s+='<text x="108" y="778" font-family="'+F_GOTHIC+'" font-weight="900" font-size="62" fill="'+BLUE+'">（税込</text>';
-  if(incl!==""){
-    const iw=Math.min(215,58*String(incl).length+40);
-    s+='<text x="'+(520-iw)+'" y="782" font-family="'+F_GOTHIC+'" font-weight="900" font-size="112" fill="'+BLUE+'" textLength="'+iw+'" lengthAdjust="spacingAndGlyphs">'+esc(incl)+'</text>';
-    s+='<text x="522" y="782" font-family="'+F_GOTHIC+'" font-weight="900" font-size="52" fill="'+BLUE+'">円）</text>';
-  }
-
-  /* バーコード＋コード */
-  s+=ean13(f.jan);
-  if(f.code){ s+='<text x="'+(f.jan&&ean13(f.jan)?212:48)+'" y="782" font-family="Arial,sans-serif" font-size="24" font-weight="700" fill="#000">'+esc(f.code)+'</text>'; }
-
-  /* 外枠（お買得品・広告の品） */
-  if(framed){ s+='<rect x="8" y="8" width="584" height="784" fill="none" stroke="'+RED+'" stroke-width="13"/>'; }
-  s+='</svg>';
+  /* \u30ad\u30e3\u30c3\u30c1\u3068\u898f\u683c\u306e textLength \u3092\u6587\u5b57\u6570\u306b\u5408\u308f\u305b\u3066\u8abf\u6574 */
+  const adj=(cur,n)=>{ if(n>0){ const t=Math.min(Math.max(Math.round(n*30),70),560); s=s.replace('textLength="'+cur+'"','textLength="'+t+'"'); } };
+  if(f.catch) adj(f.type==="okaidoku"?430:(f.type==="tokusen"?440:445), [...f.catch].length*1.15);
+  if(f.spec) adj(f.type==="tokusen"?175:190, [...toHalf(f.spec)].length*1.35);
+  /* \u4e0b\u90e8\uff1aJAN\u30d0\u30fc\u30b3\u30fc\u30c9\uff0b\u30b3\u30fc\u30c9 */
+  let foot=ean13(f.jan);
+  if(f.code){ foot+='<text x="'+(foot?212:48)+'" y="782" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#000">'+esc(f.code)+'</text>'; }
+  if(foot) s=s.replace("</g>\n</svg>", foot+"</g>\n</svg>");
   return s;
 }
 
