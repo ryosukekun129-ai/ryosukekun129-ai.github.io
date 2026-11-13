@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>価格POP作成（お買得品・特選品・広告の品）</title>
+<meta name="theme-color" content="#e60012">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--red:#e60012;--ink:#222;--sub:#666;--line:#ddd;--bg:#f4f4f6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);padding-bottom:40px}
+header{background:var(--red);color:#fff;padding:10px 14px;font-weight:900;font-size:18px;position:sticky;top:0;z-index:5}
+.wrap{max-width:560px;margin:0 auto;padding:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
+label:first-child{margin-top:0}
+input[type=text],input[type=number],textarea{width:100%;font-size:17px;padding:9px 10px;border:1px solid #bbb;border-radius:8px;background:#fff}
+textarea{resize:vertical;min-height:56px;line-height:1.35}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.btn{appearance:none;border:0;border-radius:9px;padding:12px 10px;font-size:16px;font-weight:700;cursor:pointer;width:100%}
+.btn.red{background:var(--red);color:#fff}
+.btn.dark{background:#333;color:#fff}
+.btn.ghost{background:#fff;border:1px solid #bbb;color:var(--ink)}
+.btn:active{opacity:.75}
+.tabs{display:flex;gap:6px}
+.tabs button{flex:1;padding:11px 2px;font-size:15px;font-weight:900;border:2px solid var(--red);background:#fff;color:var(--red);border-radius:9px;cursor:pointer}
+.tabs button.on{background:var(--red);color:#fff}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;padding:9px 2px;font-size:15px;font-weight:700;border:1.5px solid #999;background:#fff;border-radius:8px;cursor:pointer}
+.seg button.on{background:#333;color:#fff;border-color:#333}
+.tgl{display:flex;align-items:center;justify-content:space-between;padding:9px 2px;border-top:1px dashed #e3e3e3}
+.tgl span{font-size:15px;font-weight:700}
+.tgl input{width:24px;height:24px;accent-color:var(--red)}
+#previewBox{display:flex;justify-content:center}
+#previewBox svg{width:min(100%,400px);height:auto;box-shadow:0 2px 14px rgba(0,0,0,.18);background:#fff}
+.note{font-size:12px;color:var(--sub);line-height:1.6}
+#lookupMsg{font-size:13px;margin-top:6px;min-height:18px}
+.listItem{display:flex;gap:10px;align-items:center;border-top:1px solid #eee;padding:8px 0}
+.listItem svg{width:54px;height:auto;flex:none;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.listItem .meta{flex:1;font-size:13px;line-height:1.5;word-break:break-all}
+.listItem button{flex:none;border:1px solid #bbb;background:#fff;border-radius:7px;padding:7px 10px;font-size:13px}
+#printArea{display:none}
+@media print{
+ body{background:#fff;padding:0}
+ header,.wrap{display:none!important}
+ #printArea{display:block}
+ .sheet{page-break-after:always;display:flex;flex-wrap:wrap;align-content:flex-start}
+ .sheet:last-child{page-break-after:auto}
+ .popPrint{overflow:hidden}
+ .popPrint svg{width:100%;height:100%;display:block}
+}
+@page{size:A4;margin:8mm}
+</style>
+</head>
+<body>
+<header>価格POP作成</header>
+<div class="wrap">
+
+<div class="card">
+  <label>JANコード（スキャンすると商品名・規格を自動入力）</label>
+  <div class="row">
+    <input type="text" id="inJan" inputmode="numeric" placeholder="JANコード">
+    <button class="btn dark" id="scanBtn" style="flex:0 0 118px">📷 スキャン</button>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <button class="btn ghost" id="lookupBtn">このJANで入力</button>
+    <button class="btn ghost" id="webBtn">ネットで商品名を検索</button>
+  </div>
+  <div id="lookupMsg"></div>
+</div>
+
+<div class="card">
+  <label>POPの種類</label>
+  <div class="tabs" id="typeTabs">
+    <button data-type="okaidoku" class="on">お買得品</button>
+    <button data-type="tokusen">特選品</button>
+    <button data-type="kokoku">広告の品</button>
+  </div>
+
+  <label>キャッチコピー（青文字・任意）</label>
+  <input type="text" id="inCatch" placeholder="例：1枚で、便器から床まで">
+
+  <label>商品名（改行で2行まで・表示幅に自動で圧縮されます）</label>
+  <textarea id="inName" placeholder="例：TSUBAKI&#10;モイスト＆リペアポンプペアセット"></textarea>
+
+  <label>規格（緑文字・任意）</label>
+  <input type="text" id="inSpec" placeholder="例：450mℓ×2 / 20枚 / 400g×2+70g">
+
+  <div class="row">
+    <div>
+      <label>本体価格（円）</label>
+      <input type="number" id="inPrice" inputmode="numeric" placeholder="875">
+    </div>
+    <div>
+      <label>税率</label>
+      <div class="seg" id="taxSeg">
+        <button data-tax="10" class="on">10%</button>
+        <button data-tax="8">8%（軽減）</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tgl"><span>各種（「各」＋商品名に各種を付ける）</span><input type="checkbox" id="inKakushu"></div>
+  <div class="tgl"><span>◆マーク（商品名の前に◆）</span><input type="checkbox" id="inDiamond"></div>
+  <div class="tgl"><span>希望小売価格を表示</span><input type="checkbox" id="inKiboOn"></div>
+  <div id="kiboRow" style="display:none">
+    <label>希望小売価格（税抜・円）</label>
+    <input type="number" id="inKibo" inputmode="numeric" placeholder="220">
+  </div>
+
+  <div class="row">
+    <div>
+      <label>下部の小さいコード（任意）</label>
+      <input type="text" id="inCode" placeholder="例：100 K4 J3350">
+    </div>
+    <div>
+      <label>部数</label>
+      <input type="number" id="inCopies" inputmode="numeric" value="1" min="1" max="50">
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div id="previewBox"></div>
+  <div class="row" style="margin-top:12px">
+    <button class="btn ghost" id="addBtn">リストに追加</button>
+    <button class="btn red" id="printOneBtn">このまま印刷／PDF</button>
+  </div>
+  <p class="note">税込価格は本体価格×税率で自動計算（1円未満切り捨て）。印刷サイズは下のリスト印刷で選べます。</p>
+</div>
+
+<div class="card">
+  <label style="margin-top:0">印刷リスト</label>
+  <div id="listBox"><p class="note">まだありません。「リストに追加」で貯めてまとめて印刷できます。</p></div>
+  <label>印刷サイズ</label>
+  <div class="seg" id="sizeSeg">
+    <button data-size="a5" class="on">A5（2枚/A4）</button>
+    <button data-size="hagaki">はがき（4枚/A4）</button>
+    <button data-size="a4">A4いっぱい</button>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn ghost" id="clearBtn">リストを空にする</button>
+    <button class="btn red" id="printListBtn">リストを印刷／PDF</button>
+  </div>
+  <p class="note">「PDFで保存」は印刷画面で送信先を「PDFに保存」にしてください。データ：商品名の自動入力は2026年11月分のポイントバンドル資料（1,501件）と、見つからない場合はネットの商品データベース（Open Food Facts等）を参照します。</p>
+</div>
+
+</div>
+<div id="printArea"></div>
+<script src="jandb.js"></script>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const state={type:"okaidoku",tax:10,size:"a5"};
+const list=[];
+
+/* ---------- ユーティリティ ---------- */
+const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const toHalf=s=>String(s??"").replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/　/g," ");
+function taxIncl(price,rate){ if(!price&&price!==0) return ""; return Math.floor(Number(price)*(rate===8?1.08:1.1)); }
+
+/* 黄色スターバースト（価格の背面） */
+function burst(cx,cy,r1,r2,n,seed){
+  let pts=[]; let rnd=seed||7;
+  const rand=()=>{ rnd=(rnd*16807)%2147483647; return rnd/2147483647; };
+  for(let i=0;i<n*2;i++){
+    const a=Math.PI*i/n - Math.PI/2;
+    const r=(i%2===0)? r1*(0.82+rand()*0.30) : r2*(0.85+rand()*0.3);
+    pts.push((cx+Math.cos(a)*r).toFixed(1)+","+(cy+Math.sin(a)*r*1.12).toFixed(1));
+  }
+  return '<polygon points="'+pts.join(" ")+'" fill="#ffe600"/>';
+}
+
+/* EAN-13バーコード（下部表示用） */
+const EAN_L=["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"];
+const EAN_G=["0100111","0110011","0011011","0100001","0011101","0111001","0000101","0010001","0001001","0010111"];
+const EAN_R=["1110010","1100110","1101100","1000010","1011100","1001110","1010000","1000100","1001000","1110100"];
+const EAN_PAR=["LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG","LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"];
+function ean13(jan){
+  jan=String(jan||"").replace(/\D/g,"");
+  if(jan.length!==13) return "";
+  let sum=0; for(let i=0;i<12;i++){ sum+=Number(jan[i])*(i%2?3:1); }
+  if((10-(sum%10))%10!==Number(jan[12])) return "";
+  const par=EAN_PAR[Number(jan[0])]; let bits="101";
+  for(let i=0;i<6;i++){ const d=Number(jan[1+i]); bits+=(par[i]==="L"?EAN_L[d]:EAN_G[d]); }
+  bits+="01010";
+  for(let i=0;i<6;i++){ bits+=EAN_R[Number(jan[7+i])]; }
+  bits+="101";
+  let out=""; const w=1.55;
+  for(let i=0;i<bits.length;i++){ if(bits[i]==="1"){ out+='<rect x="'+(i*w).toFixed(2)+'" y="0" width="'+w+'" height="26" fill="#000"/>'; } }
+  return '<g transform="translate(46,758)">'+out+'</g>';
+}
+
+/* SUNDRUGロゴ（簡略再現） */
+function sundrugLogo(){
+  return '<g transform="translate(28,18)">'
+  +'<path d="M62 4 A58 58 0 0 1 120 62 L62 62 Z" fill="#fff"/>'
+  +'<path d="M62 4 A58 58 0 0 1 120 62 L92 62 A30 30 0 0 0 62 32 Z" fill="#ffcc00"/>'
+  +'<path d="M62 120 A58 58 0 0 1 4 62 L62 62 Z" fill="#fff"/>'
+  +'<path d="M62 120 A58 58 0 0 1 4 62 L32 62 A30 30 0 0 0 62 92 Z" fill="#005BAC"/>'
+  +'<circle cx="62" cy="62" r="10" fill="#fff"/>'
+  +'<text x="62" y="146" text-anchor="middle" font-size="25" font-weight="700" fill="#fff" font-family="Arial,sans-serif" letter-spacing="1">SUNDRUG</text></g>';
+}
+</script>
+<script>
+"use strict";
+/* ---------- POP描画（SVG・viewBox 0 0 600 800） ---------- */
+const F_GOTHIC="'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans-serif";
+const F_ROUND="'Hiragino Maru Gothic ProN','M PLUS Rounded 1c','Hiragino Kaku Gothic ProN',sans-serif";
+const RED="#e60012", BLUE="#0011e6", GREEN="#00913a";
+
+function getForm(){
+  return {
+    type:state.type, tax:state.tax,
+    catch:$("inCatch").value.trim(),
+    name:$("inName").value.replace(/\s+$/,""),
+    spec:$("inSpec").value.trim(),
+    price:$("inPrice").value===""?"":Number($("inPrice").value),
+    kakushu:$("inKakushu").checked,
+    diamond:$("inDiamond").checked,
+    kiboOn:$("inKiboOn").checked,
+    kibo:$("inKibo").value===""?"":Number($("inKibo").value),
+    code:$("inCode").value.trim(),
+    jan:$("inJan").value.replace(/\D/g,"")
+  };
+}
+
+function nameLines(f){
+  let lines=f.name.split("\n").map(s=>s.trim()).filter(s=>s!=="");
+  if(lines.length===0) lines=["商品名"];
+  let suffix="";
+  if(f.kakushu){ suffix=(f.type==="kokoku")?"（各種）":"各種"; }
+  if(suffix){
+    const last=lines[lines.length-1];
+    if(!last.includes("各種")) lines[lines.length-1]=last+" "+suffix;
+  }
+  if(f.diamond && !lines[0].startsWith("◆")) lines[0]="◆"+lines[0];
+  return lines.slice(0,2);
+}
+
+function buildPOP(f){
+  const W=600,H=800, framed=(f.type!=="tokusen");
+  const lines=nameLines(f);
+  const incl=f.price===""?"":taxIncl(f.price,f.tax);
+  let s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">';
+  s+='<rect x="0" y="0" width="600" height="800" fill="#fff"/>';
+  /* スターバースト（本文エリア） */
+  s+='<g clip-path="url(#bodyClip)">'+burst(430,600,400,120,16,11)+burst(300,760,360,110,14,29)+'</g>';
+  s+='<defs><clipPath id="bodyClip"><rect x="'+(framed?16:0)+'" y="160" width="'+(framed?568:600)+'" height="'+(framed?624:640)+'"/></clipPath></defs>';
+
+  /* ヘッダー */
+  if(f.type==="tokusen"){
+    s+='<rect x="0" y="0" width="600" height="160" fill="'+RED+'"/>';
+    s+=sundrugLogo();
+    s+='<g transform="translate(368,80)">'+burst(0,0,215,60,12,5)+'</g>';
+    s+='<text x="372" y="112" text-anchor="middle" font-family="'+F_GOTHIC+'" font-weight="900" font-size="104" fill="#000" transform="translate(6,7)">特選品</text>';
+    s+='<text x="372" y="112" text-anchor="middle" font-family="'+F_GOTHIC+'" font-weight="900" font-size="104" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke">特選品</text>';
+  }else{
+    s+='<rect x="0" y="0" width="600" height="160" fill="'+RED+'"/>';
+    if(f.type==="okaidoku"){
+      s+='<text x="300" y="120" text-anchor="middle" font-family="'+F_GOTHIC+'" font-weight="900" font-size="112" fill="#fff" letter-spacing="4">お買得品</text>';
+    }else{
+      s+='<text x="300" y="120" text-anchor="middle" font-family="'+F_ROUND+'" font-weight="900" font-size="112" fill="#fff" letter-spacing="6">広告の品</text>';
+    }
+  }
+
+  /* キャッチコピー */
+  let nameY=lines.length>1?318:330;
+  if(f.catch){
+    s+='<text x="48" y="222" font-family="'+F_GOTHIC+'" font-weight="700" font-size="41" fill="'+BLUE+'">'+esc(f.catch)+'</text>';
+    nameY=lines.length>1?330:342;
+  }
+  /* 商品名 */
+  const nameSize=lines.length>1?88:100;
+  lines.forEach((ln,i)=>{
+    s+='<text x="46" y="'+(nameY+i*(nameSize+16))+'" font-family="'+F_GOTHIC+'" font-weight="900" font-size="'+nameSize+'" fill="#000" textLength="508" lengthAdjust="spacingAndGlyphs">'+esc(ln)+'</text>';
+  });
+  let curY=nameY+lines.length*(nameSize+16)-22;
+  /* 規格 */
+  if(f.spec){
+    s+='<text x="48" y="'+(curY+52)+'" font-family="'+F_GOTHIC+'" font-weight="900" font-size="52" fill="'+GREEN+'">'+esc(toHalf(f.spec))+'</text>';
+    curY+=58;
+  }
+  /* 希望小売価格 */
+  if(f.kiboOn && f.kibo!==""){
+    s+='<text x="48" y="'+(curY+58)+'" font-family="'+F_GOTHIC+'" font-weight="900" font-size="35" fill="#000">希望小売価格</text>';
+    s+='<text x="252" y="'+(curY+58)+'" font-family="'+F_GOTHIC+'" font-weight="700" font-size="30" fill="'+GREEN+'">税抜</text>';
+    s+='<text x="300" y="'+(curY+62)+'" font-family="'+F_GOTHIC+'" font-weight="900" font-size="62" fill="'+GREEN+'">'+esc(f.kibo)+'<tspan font-size="34">円</tspan></text>';
+  }
+
+  /* 価格 */
+  const priceStr=f.price===""?"000":String(f.price);
+  const pw=Math.min(430, 118*priceStr.length+90);
+  s+='<text x="'+(600-70-pw)+'" y="706" font-family="'+F_GOTHIC+'" font-weight="900" font-size="295" fill="'+RED+'" stroke="#000" stroke-width="7" paint-order="stroke" textLength="'+pw+'" lengthAdjust="spacingAndGlyphs">'+esc(priceStr)+'</text>';
+  s+='<text x="512" y="706" font-family="'+F_GOTHIC+'" font-weight="900" font-size="86" fill="'+RED+'" stroke="#000" stroke-width="5" paint-order="stroke">円</text>';
+
+  /* 本体価格ラベル（各種は上に赤い「各」） */
+  if(f.kakushu){
+    s+='<text x="52" y="592" font-family="'+F_GOTHIC+'" font-weight="900" font-size="56" fill="'+RED+'" stroke="#fff" stroke-width="8" paint-order="stroke">各</text>';
+  }
+  s+='<text x="48" y="652" font-family="'+F_GOTHIC+'" font-weight="900" font-size="54" fill="#000" stroke="#fff" stroke-width="9" paint-order="stroke">本体</text>';
+  s+='<text x="48" y="710" font-family="'+F_GOTHIC+'" font-weight="900" font-size="54" fill="#000" stroke="#fff" stroke-width="9" paint-order="stroke">価格</text>';
+
+  /* 税込 */
+  s+='<text x="108" y="778" font-family="'+F_GOTHIC+'" font-weight="900" font-size="62" fill="'+BLUE+'">（税込</text>';
+  if(incl!==""){
+    const iw=Math.min(215,58*String(incl).length+40);
+    s+='<text x="'+(520-iw)+'" y="782" font-family="'+F_GOTHIC+'" font-weight="900" font-size="112" fill="'+BLUE+'" textLength="'+iw+'" lengthAdjust="spacingAndGlyphs">'+esc(incl)+'</text>';
+    s+='<text x="522" y="782" font-family="'+F_GOTHIC+'" font-weight="900" font-size="52" fill="'+BLUE+'">円）</text>';
+  }
+
+  /* バーコード＋コード */
+  s+=ean13(f.jan);
+  if(f.code){ s+='<text x="'+(f.jan&&ean13(f.jan)?212:48)+'" y="782" font-family="Arial,sans-serif" font-size="24" font-weight="700" fill="#000">'+esc(f.code)+'</text>'; }
+
+  /* 外枠（お買得品・広告の品） */
+  if(framed){ s+='<rect x="8" y="8" width="584" height="784" fill="none" stroke="'+RED+'" stroke-width="13"/>'; }
+  s+='</svg>';
+  return s;
+}
+
+function render(){ $("previewBox").innerHTML=buildPOP(getForm()); }
+
+/* ---------- イベント ---------- */
+$("typeTabs").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  state.type=b.dataset.type;
+  document.querySelectorAll("#typeTabs button").forEach(x=>x.classList.toggle("on",x===b));
+  render();
+});
+$("taxSeg").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  state.tax=Number(b.dataset.tax);
+  document.querySelectorAll("#taxSeg button").forEach(x=>x.classList.toggle("on",x===b));
+  render();
+});
+$("sizeSeg").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  state.size=b.dataset.size;
+  document.querySelectorAll("#sizeSeg button").forEach(x=>x.classList.toggle("on",x===b));
+});
+$("inKiboOn").addEventListener("change",()=>{ $("kiboRow").style.display=$("inKiboOn").checked?"block":"none"; render(); });
+["inCatch","inName","inSpec","inPrice","inKibo","inCode","inJan"].forEach(id=>$(id).addEventListener("input",render));
+["inKakushu","inDiamond"].forEach(id=>$(id).addEventListener("change",render));
+
+/* ---------- JAN→商品名・規格の自動入力 ---------- */
+function splitSpec(name){
+  let n=toHalf(name).trim();
+  const m=n.match(/^(.*?)[\s　]*([0-9]+(?:\.[0-9]+)?\s*(?:錠|粒|カプセル|枚|個|本|包|袋|缶|箱|組|シート|回分|日分|ｍｌ|mℓ|ml|ML|ｇ|g|G|ｋｇ|kg|KG|Ｌ|L|ℓ)(?:\s*[×xX]\s*[0-9]+(?:\s*\+\s*[0-9]+\s*(?:ｇ|g|G|錠|粒|枚))?)?\s*(?:入|分)?)$/);
+  if(m && m[1].trim().length>=2){ return {name:m[1].trim(), spec:m[2].replace(/\s+/g,"")}; }
+  return {name:n, spec:""};
+}
+function applyProduct(name,spec,srcLabel){
+  let n=toHalf(name||"");
+  if(n.startsWith("◆")){ $("inDiamond").checked=true; n=n.replace(/^◆/,""); }
+  const sp=spec?{name:n,spec:toHalf(spec)}:splitSpec(n);
+  $("inName").value=sp.name;
+  if(sp.spec) $("inSpec").value=sp.spec;
+  $("lookupMsg").textContent="✓ "+srcLabel+"から自動入力しました（直せます）";
+  $("lookupMsg").style.color="#0a7a33";
+  render();
+}
+async function lookupJan(jan){
+  jan=String(jan||"").replace(/\D/g,"");
+  if(!jan){ $("lookupMsg").textContent="JANコードを入力してください"; $("lookupMsg").style.color="#c00"; return; }
+  $("inJan").value=jan;
+  if(window.JANDB && JANDB[jan]){
+    applyProduct(JANDB[jan].n, JANDB[jan].k, "店内資料（2026年11月分）");
+    return;
+  }
+  $("lookupMsg").textContent="ネットの商品データベースを検索中…"; $("lookupMsg").style.color="#666";
+  const urls=[
+    "https://world.openfoodfacts.net/api/v2/product/"+jan+".json",
+    "https://world.openbeautyfacts.net/api/v2/product/"+jan+".json",
+    "https://world.openproductsfacts.net/api/v2/product/"+jan+".json"
+  ];
+  for(const u of urls){
+    try{
+      const r=await fetch(u); const j=await r.json();
+      if(j && j.status===1 && j.product){
+        const p=j.product;
+        const nm=p.product_name_ja||p.product_name||"";
+        if(nm){ applyProduct(nm, p.quantity||"", "ネットの商品データベース"); return; }
+      }
+    }catch(e){ /* 次の候補へ */ }
+  }
+  $("lookupMsg").textContent="自動で見つかりませんでした。「ネットで商品名を検索」で名前を確認して貼り付けてください。";
+  $("lookupMsg").style.color="#c00";
+}
+$("lookupBtn").addEventListener("click",()=>lookupJan($("inJan").value));
+$("inJan").addEventListener("keydown",e=>{ if(e.key==="Enter") lookupJan($("inJan").value); });
+$("webBtn").addEventListener("click",()=>{
+  const jan=$("inJan").value.replace(/\D/g,"");
+  const q=jan? jan+" 商品名" : ($("inName").value||"商品名");
+  window.open("https://www.google.com/search?q="+encodeURIComponent(q),"_blank");
+});
+$("scanBtn").addEventListener("click",()=>{
+  const ret="https://ryosukekun129-ai.github.io/pricepop/?scan={CODE}";
+  location.href="intent://scan/?ret="+encodeURIComponent(ret)+"&SCAN_FORMATS=EAN_13,EAN_8"+
+   "#Intent;scheme=zxing;package=com.teacapps.barcodescanner;S.browser_fallback_url="+
+   encodeURIComponent("https://ryosukekun129-ai.github.io/pricepop/")+";end";
+});
+(function(){
+  const q=new URLSearchParams(location.search).get("scan");
+  if(q){ history.replaceState(null,"",location.pathname); lookupJan(q); }
+})();
+
+/* ---------- 印刷リスト ---------- */
+function renderList(){
+  const box=$("listBox");
+  if(list.length===0){ box.innerHTML='<p class="note">まだありません。「リストに追加」で貯めてまとめて印刷できます。</p>'; return; }
+  box.innerHTML="";
+  list.forEach((it,i)=>{
+    const d=document.createElement("div"); d.className="listItem";
+    d.innerHTML=buildPOP(it.f)+'<div class="meta">'+esc(it.f.name.split("\n")[0])+" "+esc(it.f.spec)+"<br>本体 "+esc(it.f.price)+"円 × "+it.copies+"部</div>";
+    const del=document.createElement("button"); del.textContent="削除";
+    del.addEventListener("click",()=>{ list.splice(i,1); renderList(); });
+    d.appendChild(del); box.appendChild(d);
+  });
+}
+$("addBtn").addEventListener("click",()=>{
+  const copies=Math.max(1,Math.min(50,Number($("inCopies").value)||1));
+  list.push({f:getForm(),copies}); renderList();
+});
+$("clearBtn").addEventListener("click",()=>{ list.length=0; renderList(); });
+
+const SIZES={a5:{w:148,h:210,per:2},hagaki:{w:100,h:148,per:4},a4:{w:190,h:253,per:1}};
+function doPrint(items){
+  const sz=SIZES[state.size];
+  const area=$("printArea"); area.innerHTML="";
+  let sheet=null, count=0;
+  const pushSheet=()=>{ sheet=document.createElement("div"); sheet.className="sheet"; sheet.style.width="194mm"; sheet.style.gap="4mm"; area.appendChild(sheet); count=0; };
+  pushSheet();
+  items.forEach(it=>{
+    for(let c=0;c<it.copies;c++){
+      if(count>=sz.per) pushSheet();
+      const d=document.createElement("div"); d.className="popPrint";
+      d.style.width=sz.w+"mm"; d.style.height=sz.h+"mm";
+      d.innerHTML=buildPOP(it.f);
+      sheet.appendChild(d); count++;
+    }
+  });
+  setTimeout(()=>window.print(),60);
+}
+$("printOneBtn").addEventListener("click",()=>doPrint([{f:getForm(),copies:Math.max(1,Number($("inCopies").value)||1)}]));
+$("printListBtn").addEventListener("click",()=>{ if(list.length) doPrint(list); });
+
+render();
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}</script>
+</body>
+</html>
