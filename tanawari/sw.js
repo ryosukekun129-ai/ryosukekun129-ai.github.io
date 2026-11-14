@@ -1,4 +1,4 @@
-const CACHE = "tanawari-v8-20261112";
+const CACHE = "tanawari-v9-20261114";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
