@@ -1,0 +1,13 @@
+{
+  "name": "電子プライス撤去チェック",
+  "short_name": "撤去チェック",
+  "description": "売り切り対象の電子プライス撤去候補629件の返品可否確認",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
