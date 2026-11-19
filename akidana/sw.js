@@ -1,4 +1,4 @@
-const CACHE = "akidana-v1-20261119";
+const CACHE = "akidana-v2-20261119";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

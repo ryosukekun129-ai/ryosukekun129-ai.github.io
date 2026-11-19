@@ -19,243 +19,142 @@
   nav button { flex: 1; padding: 12px 2px; font-size: 14px; font-weight: 700; color: #d1d5db; background: none; border: none; border-bottom: 3px solid transparent; }
   nav button.active { color: #fff; border-bottom-color: #059669; }
   main { padding: 12px; max-width: 640px; margin: 0 auto; }
-  .view { display: none; } .view.active { display: block; }
+  .view { display: none; padding-bottom: 118px; } .view.active { display: block; }
   .btn { display: block; width: 100%; padding: 16px; font-size: 17px; font-weight: 700; border: none; border-radius: 12px; background: #2563eb; color: #fff; margin: 10px 0; }
   .btn:active { opacity: .8; }
-  input[type="text"], input[type="tel"] { width: 100%; padding: 14px; font-size: 18px; border: 2px solid #d1d5db; border-radius: 12px; background: #fff; }
+  .btn-green { background: #059669; } .btn-gray { background: #4b5563; } .btn-red { background: #dc2626; }
+  .btn-small { padding: 10px; font-size: 14px; margin: 6px 0; }
+  input[type="text"], input[type="tel"], textarea { width: 100%; padding: 14px; font-size: 17px; border: 2px solid #d1d5db; border-radius: 12px; background: #fff; font-family: inherit; }
+  textarea { font-size: 13px; }
   .row { display: flex; gap: 8px; } .row .btn { margin: 0; }
   .hint { font-size: 13px; color: #6b7280; margin: 8px 0; line-height: 1.5; }
-  #result, #result2 { margin-top: 12px; }
-  .card { border-radius: 16px; padding: 14px 10px; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+  .card { border-radius: 16px; padding: 14px 10px; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.18); margin-top: 12px; }
   .card .cls { font-size: 24px; font-weight: 900; line-height: 1.2; }
-  .card .name { font-size: 19px; font-weight: 700; margin-top: 8px; line-height: 1.4; }
+  .card .name { font-size: 17px; font-weight: 700; margin-top: 8px; line-height: 1.4; }
   .card .jan { font-size: 14px; opacity: .85; margin-top: 2px; letter-spacing: .05em; }
-  .card .pos { font-size: 17px; font-weight: 700; margin-top: 10px; line-height: 1.6; background: rgba(255,255,255,.18); border-radius: 10px; padding: 8px 10px; }
-  .shelf { background: #fff; color: #111827; border-radius: 12px; padding: 6px; margin-top: 8px; touch-action: pan-y; }
-  .shelf .stitle { font-weight: 800; font-size: 15px; margin-bottom: 6px; }
-  .srow { display: flex; align-items: center; gap: 3px; margin-bottom: 4px; }
-  .srow .slab { width: 20px; flex: none; font-size: 10px; color: #6b7280; text-align: right; padding-right: 2px; }
-  .scell { flex: 1; height: 34px; background: #e5e7eb; border-radius: 5px; cursor: pointer; }
-  .scell:active { opacity: .65; }
-  .scell.hit { outline: 2px solid #111827; outline-offset: -1px; }
-  .card.empty { background: #4b5563; }
-  .c-ari { background: #2563eb; } .c-nashi { background: #4b5563; }
-  .chips { display: flex; gap: 8px; margin: 4px 0 10px; flex-wrap: wrap; }
-  .chip { padding: 9px 14px; border-radius: 999px; border: 2px solid #d1d5db; background: #fff; font-size: 14px; font-weight: 700; }
-  .chip.active { background: #1f2937; color: #fff; border-color: #1f2937; }
-  .group { font-size: 14px; font-weight: 900; color: #374151; margin: 16px 0 6px; }
-  .item { background: #fff; border-radius: 10px; padding: 11px 12px; margin-bottom: 6px; display: flex; gap: 10px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-  .item:active { background: #eef2ff; }
-  .badge { flex: none; min-width: 44px; height: 30px; border-radius: 999px; color: #fff; font-weight: 900; font-size: 13px; display: flex; align-items: center; justify-content: center; padding: 0 8px; }
-  .badge-ari { background: #2563eb; } .badge-nashi { background: #4b5563; }
-  .item .nm { font-size: 14px; font-weight: 600; line-height: 1.35; }
-  .item .ps { font-size: 12px; color: #6b7280; margin-top: 1px; }
-  #history { margin-top: 18px; }
-  #history h2 { font-size: 15px; margin: 0 0 8px; }
-  .hist { background: #fff; border-radius: 10px; padding: 9px 12px; margin-bottom: 5px; font-size: 13px; display: flex; gap: 8px; align-items: center; }
-  .hist .badge { min-width: 40px; height: 24px; font-size: 12px; }
-  .hist time { color: #9ca3af; font-size: 11px; margin-left: auto; flex: none; }
-  #nashi-count { font-size: 14px; font-weight: 700; color: #4b5563; }
-  #view-scan.active { display: flex; flex-direction: column; min-height: calc(100dvh - 132px); }
-  #view-scan { padding-bottom: 118px; touch-action: pan-y; }
-  .scan-bottom { margin-top: auto; padding-top: 18px; }
-  #btn-ext { background: #059669; font-size: 21px; padding: 24px; margin: 0; width: auto; position: fixed; left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 25; box-shadow: 0 8px 20px rgba(0,0,0,.3); }
+  .card .pos { font-size: 16px; font-weight: 700; margin-top: 10px; line-height: 1.6; background: rgba(255,255,255,.18); border-radius: 10px; padding: 8px 10px; white-space: pre-wrap; word-break: break-all; }
+  .c-ari { background: #2563eb; } .c-nashi { background: #4b5563; } .c-reg { background: #059669; } .c-dup { background: #d97706; } .c-err { background: #dc2626; }
   .bc-card { background: #fff; border-radius: 16px; padding: 16px 8px 10px; margin-top: 10px; text-align: center; box-shadow: 0 4px 14px rgba(0,0,0,.15); }
-  #s-bc { width: 94%; height: auto; display: none; margin: 0 auto; }
-  #s-jan { font-family: ui-monospace, Menlo, monospace; font-size: 29px; font-weight: 800; letter-spacing: .12em; color: #111827; margin-top: 4px; }
-  #g-buttons { margin-top: 12px; }
+  .bc-card canvas { width: 94%; height: auto; display: none; margin: 0 auto; }
+  .bc-jan { font-family: ui-monospace, Menlo, monospace; font-size: 29px; font-weight: 800; letter-spacing: .12em; color: #111827; margin-top: 4px; }
+  .fixed-btn { position: fixed; left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 25; box-shadow: 0 8px 20px rgba(0,0,0,.3); font-size: 20px; padding: 22px; margin: 0; width: auto; display: none; }
+  .fixed-btn.show { display: block; }
+  .group { font-size: 14px; font-weight: 900; color: #374151; margin: 16px 0 6px; }
+  .item { background: #fff; border-radius: 10px; padding: 11px 12px; margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .item .janline { font-family: ui-monospace, Menlo, monospace; font-size: 16px; font-weight: 800; letter-spacing: .04em; }
+  .item .memo { font-size: 14px; font-weight: 600; margin-top: 3px; line-height: 1.4; }
+  .item .date { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .item .actions { display: flex; gap: 8px; margin-top: 8px; }
+  .item .actions button { flex: 1; padding: 9px; font-size: 13px; font-weight: 700; border: none; border-radius: 8px; color: #fff; }
+  .hist { background: #fff; border-radius: 10px; padding: 9px 12px; margin-bottom: 5px; font-size: 13px; display: flex; gap: 8px; align-items: center; }
+  .badge { flex: none; min-width: 56px; height: 26px; border-radius: 999px; color: #fff; font-weight: 900; font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 0 8px; }
+  .badge-ari { background: #2563eb; } .badge-nashi { background: #4b5563; }
+  .hist time { color: #9ca3af; font-size: 11px; margin-left: auto; flex: none; }
+  .memo-box { background: #fff; border-radius: 12px; padding: 12px; margin-top: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .memo-box label { font-size: 14px; font-weight: 800; display: block; margin-bottom: 6px; }
 </style>
 </head>
 <body>
 <header>
   <h1>空き棚補充アプリ<span class="tag">空き棚</span></h1>
-  <div class="sub">空き棚0件（プライスカード写真待ち）</div>
+  <div class="sub" id="sub-count">空き棚登録 0件（アプリ内保存）</div>
 </header>
 <nav>
-  <button id="tab-scan" class="active">判定スキャン</button>
-  <button id="tab-search">入力・検索</button>
-  <button id="tab-list">空き棚一覧</button>
+  <button id="tab-reg" class="active">空き棚登録</button>
+  <button id="tab-chk">倉庫で照合</button>
+  <button id="tab-list">登録一覧</button>
 </nav>
 <main>
-  <section id="view-scan" class="view active">
-    <div id="result"><div class="hint" style="font-size:15px;">まだ判定していません。下の「バーコードスキャン」ボタンで読み取ってください。</div></div>
-    <div id="shelf-area"></div>
+  <section id="view-reg" class="view active">
+    <div class="hint" style="font-size:15px;">空き棚のプライスカードをスキャンすると、このアプリの中に保存されます。</div>
+    <div id="reg-result"></div>
     <div class="bc-card">
-      <canvas id="s-bc" width="570" height="240"></canvas>
-      <div id="s-jan"></div>
-      <div id="s-bcph" class="hint" style="margin:0;">商品を表示すると、ここにバーコードが出ます。</div>
+      <canvas id="reg-bc" width="570" height="240"></canvas>
+      <div id="reg-jan" class="bc-jan"></div>
+      <div id="reg-bcph" class="hint" style="margin:0;">登録すると、ここにバーコードが出ます。</div>
     </div>
-    <div class="chips" id="g-buttons"></div>
-    <div id="history">
-      <h2>スキャン履歴 <span id="nashi-count"></span></h2>
-      <div id="hist-list"><div class="hint">まだ履歴がありません。</div></div>
+    <div class="memo-box" id="reg-memo-box" style="display:none;">
+      <label for="reg-memo">メモ（場所など）</label>
+      <input type="text" id="reg-memo" placeholder="例：化粧品の棚、入口の近く">
+      <button class="btn btn-green btn-small" id="btn-memo-save">メモを保存</button>
+      <div class="hint" id="reg-memo-jan"></div>
     </div>
-    <div class="scan-bottom">
-      <button class="btn" id="btn-ext">バーコードスキャン</button>
-      <div class="hint">TeaCapps「QRコード＆バーコードリーダー」が開きます。読み取ると自動でこのアプリに戻り、結果が一番上に表示されます。</div>
-    </div>
-  </section>
-  <section id="view-search" class="view">
-    <div class="group" style="margin-top:2px;">JANで判定</div>
+    <div class="group">手入力で登録</div>
     <div class="row">
-      <input type="tel" id="jan-input" inputmode="numeric" placeholder="JANコード（13桁）" maxlength="13">
-      <button class="btn" id="btn-jan" style="width:110px; flex:none;">判定</button>
+      <input type="tel" id="reg-input" inputmode="numeric" placeholder="JANコード（13桁）" maxlength="13">
+      <button class="btn btn-green" id="btn-reg-manual" style="width:110px; flex:none;">登録</button>
     </div>
-    <div class="group">商品名で検索</div>
-    <input type="text" id="name-input" placeholder="商品名の一部">
-    <div id="name-results" style="margin-top:10px;"></div>
-    <div id="result2"></div>
+    <button class="btn fixed-btn btn-green show" id="btn-reg-scan" data-fixed-for="reg">空き棚をスキャン（登録）</button>
+  </section>
+  <section id="view-chk" class="view">
+    <div class="hint" style="font-size:15px;">倉庫の商品をスキャンすると、登録した空き棚にその商品が入るかどうかが分かります。</div>
+    <div id="chk-result"></div>
+    <div class="bc-card">
+      <canvas id="chk-bc" width="570" height="240"></canvas>
+      <div id="chk-jan" class="bc-jan"></div>
+      <div id="chk-bcph" class="hint" style="margin:0;">照合すると、ここにバーコードが出ます。</div>
+    </div>
+    <div id="chk-delete-box" style="display:none;">
+      <button class="btn btn-red" id="btn-chk-delete">補充したので削除</button>
+    </div>
+    <div class="group">手入力で照合</div>
+    <div class="row">
+      <input type="tel" id="chk-input" inputmode="numeric" placeholder="JANコード（13桁）" maxlength="13">
+      <button class="btn" id="btn-chk-manual" style="width:110px; flex:none;">照合</button>
+    </div>
+    <div class="group">照合履歴</div>
+    <div id="chk-hist"><div class="hint">まだ履歴がありません。</div></div>
+    <button class="btn fixed-btn" id="btn-chk-scan" data-fixed-for="chk">倉庫の商品をスキャン（照合）</button>
   </section>
   <section id="view-list" class="view">
     <div id="list-body"></div>
+    <div class="group">バックアップ</div>
+    <button class="btn btn-gray btn-small" id="btn-export">全件をコピー（書き出し）</button>
+    <textarea id="export-box" rows="4" placeholder="書き出し結果がここに出ます" style="display:none;"></textarea>
+    <div class="group">復元（貼り付け）</div>
+    <textarea id="import-box" rows="4" placeholder="書き出した内容をここに貼り付け"></textarea>
+    <button class="btn btn-gray btn-small" id="btn-import">貼り付けて復元（重複は除く）</button>
+    <div class="hint" id="import-msg"></div>
+    <div class="group">全件削除</div>
+    <button class="btn btn-red btn-small" id="btn-delete-all">登録を全件削除</button>
   </section>
 </main>
 <script>
-const DATA = [];
 const TABLES = {"L": ["0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011"], "G": ["0100111", "0110011", "0011011", "0100001", "0011101", "0111001", "0000101", "0010001", "0001001", "0010111"], "R": ["1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100"], "P": ["LLLLLL", "LLGLGG", "LLGGLG", "LLGGGL", "LGLLGG", "LGGLLG", "LGGGLL", "LGLGLG", "LGLGGL", "LGGLGL"]};
-const GRIDS = {};
-const SHELVES = [];
 const APP_URL = "https://ryosukekun129-ai.github.io/akidana/";
-const byJan = new Map(DATA.map(d => [d.j, d]));
-const posIndex = new Map();
-for (const d of DATA) {
-  if (d.p) for (const a of d.p) posIndex.set(a[0] + ":" + a[1] + ":" + a[2], d);
+const STORE_KEY = "akidana-items-v1";
+const PENDING_KEY = "akidana-pending-mode";
+function loadStore() {
+  try { const v = JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); return Array.isArray(v) ? v : []; }
+  catch (e) { return []; }
 }
-function posHtml(d) {
-  if (!d.p || !d.p.length) return "空きあり（プライスカード登録済み）";
-  return d.p.map(a => "ゴンドラ" + a[0] + " 上から" + a[1] + "段目 左から" + a[2] + "番目").join("<br>");
+function saveStore(items) { localStorage.setItem(STORE_KEY, JSON.stringify(items)); }
+function findItem(jan) { return loadStore().find(x => x.j === jan) || null; }
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.getFullYear() + "/" + (d.getMonth()+1) + "/" + d.getDate() + " " + String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
 }
-function posText(d) {
-  if (!d.p || !d.p.length) return "空きあり";
-  return d.p.map(a => "ゴンドラ" + a[0] + " " + a[1] + "段目 " + a[2] + "番目").join("・");
+function updateCount() {
+  document.getElementById("sub-count").textContent = "空き棚登録 " + loadStore().length + "件（アプリ内保存）";
 }
-function judge(jan) {
-  jan = (jan || "").replace(/\D/g, "");
-  const d = byJan.get(jan);
-  if (d) return { jan, ari: true, name: d.n || "空き棚登録済み商品", pos: posHtml(d), p: d.p };
-  return { jan, ari: false, name: "空き棚が登録されていない商品", pos: "空きなし" };
-}
-function shelfHtml(g, a, color, focus) {
-  const grid = GRIDS[g];
-  if (!grid) return "";
-  const hl = focus ? focus : { t: a[1], p: a[2] };
-  const title = "ゴンドラ" + a[0] + " 上から" + a[1] + "段目 左から" + a[2] + "番目";
-  let rows = "";
-  grid.forEach((cnt, ri) => {
-    let cells = "";
-    for (let ci = 1; ci <= cnt; ci++) {
-      const hit = (ri + 1 === hl.t && ci === hl.p);
-      cells += '<span class="scell' + (hit ? " hit" : "") + '" data-t="' + (ri + 1) + '" data-p="' + ci + '"' + (hit ? ' style="background:' + color + '"' : "") + "></span>";
-    }
-    rows += '<div class="srow"><span class="slab">' + (ri + 1) + "段</span>" + cells + "</div>";
-  });
-  return '<div class="shelf" data-g="' + a[0] + '" data-ct="' + a[1] + '" data-cp="' + a[2] + '"><div class="stitle">棚の棚：' + title + "</div>" + rows + "</div>";
-}
-function showResult(el, r, focus) {
-  if (!focus && r.p && r.p.length) focus = { g: r.p[0][0], t: r.p[0][1], p: r.p[0][2] };
-  let shelves = "";
-  const color = r.ari ? "#2563eb" : "#6b7280";
-  if (r.p) for (const a of r.p) shelves += shelfHtml(a[0], a, color, focus);
-  el.innerHTML = '<div class="card ' + (r.ari ? "c-ari" : "c-nashi") + '"><div class="cls">' + (r.ari ? "空きあり" : "空きなし") + '</div>' +
-    '<div class="name">' + r.name + '</div><div class="jan">' + r.jan + '</div>' +
-    '<div class="pos">' + r.pos + '</div>' + shelves + '</div>';
-  bindShelfNav(el, focus);
-}
-let suppressTapUntil = 0;
-function navigate(el, g, t, p) {
-  const d = posIndex.get(g + ":" + t + ":" + p);
-  if (d) showResult(el, judge(d.j), { g, t, p });
-  else showEmpty(el, g, t, p);
-}
-function showEmpty(el, g, t, p) {
-  const shelf = shelfHtml(g, [g, t, p], "#9ca3af", { g, t, p });
-  el.innerHTML = '<div class="card empty"><div class="cls">商品なし</div>' +
-    '<div class="name">この位置に商品は置かれていません</div>' +
-    '<div class="pos">ゴンドラ' + g + " 上から" + t + "段目 左から" + p + "番目</div>" + shelf + '</div>';
-  bindShelfNav(el, { g, t, p });
-}
-function bindShelfNav(el, focus) {
-  el._focus = focus;
-  el.querySelectorAll(".shelf").forEach(sh => {
-    const g = +sh.dataset.g;
-    sh.querySelectorAll(".scell").forEach(cell => {
-      cell.addEventListener("click", () => {
-        if (Date.now() < suppressTapUntil) return;
-        navigate(el, g, +cell.dataset.t, +cell.dataset.p);
-      });
-    });
-  });
-}
-const histList = document.getElementById("hist-list");
-let histCount = 0, nashiCount = 0;
-function addHistory(r) {
-  if (histCount === 0) histList.innerHTML = "";
-  histCount++;
-  if (!r.ari) { nashiCount++; document.getElementById("nashi-count").textContent = "／ 空きなし " + nashiCount + "件"; }
-  const t = new Date();
-  const hh = String(t.getHours()).padStart(2, "0"), mm = String(t.getMinutes()).padStart(2, "0");
-  const div = document.createElement("div");
-  div.className = "hist";
-  div.innerHTML = '<span class="badge ' + (r.ari ? "badge-ari" : "badge-nashi") + '">' + (r.ari ? "空きあり" : "空きなし") + '</span><span>' + r.name + '</span><time>' + hh + ":" + mm + "</time>";
-  histList.prepend(div);
-}
-const VIEWS = ["scan", "search", "list"];
-function switchView(name) {
-  for (const k of VIEWS) {
-    document.getElementById("view-" + k).classList.toggle("active", k === name);
-    document.getElementById("tab-" + k).classList.toggle("active", k === name);
+function validCheckDigit(jan) {
+  const d = jan.split("").map(Number);
+  if (jan.length === 13) {
+    let s = 0; for (let i = 0; i < 12; i++) s += d[i] * (i % 2 === 0 ? 1 : 3);
+    return (10 - s % 10) % 10 === d[12];
   }
-}
-for (const k of VIEWS) document.getElementById("tab-" + k).addEventListener("click", () => switchView(k));
-document.getElementById("btn-ext").addEventListener("click", () => {
-  const ret = APP_URL + "?scan={CODE}";
-  location.href = "intent://scan/?ret=" + encodeURIComponent(ret) + "&SCAN_FORMATS=EAN_13,EAN_8" +
-    "#Intent;scheme=zxing;package=com.teacapps.barcodescanner;S.browser_fallback_url=" +
-    encodeURIComponent(APP_URL) + ";end";
-});
-const __scanQ = new URLSearchParams(location.search).get("scan");
-document.getElementById("btn-jan").addEventListener("click", () => {
-  const v = document.getElementById("jan-input").value;
-  if (v.replace(/\D/g, "").length >= 8) showResult(document.getElementById("result2"), judge(v));
-});
-document.getElementById("jan-input").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("btn-jan").click(); });
-function itemHtml(d) {
-  return '<div class="item" data-jan="' + d.j + '"><span class="badge badge-ari">空きあり</span><span><span class="nm">' + (d.n || "空き棚登録済み商品") + '</span><br><span class="ps">' + posText(d) + " ／ " + d.j + "</span></span></div>";
-}
-function bindItems(box, target) {
-  box.querySelectorAll(".item").forEach(el => el.addEventListener("click", () => {
-    showResult(document.getElementById(target), judge(el.dataset.jan));
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }));
-}
-document.getElementById("name-input").addEventListener("input", e => {
-  const q = e.target.value.trim();
-  const box = document.getElementById("name-results");
-  if (!q) { box.innerHTML = ""; return; }
-  const hits = DATA.filter(d => (d.n || "").includes(q)).slice(0, 50);
-  box.innerHTML = hits.length ? hits.map(d => itemHtml(d)).join("") : '<div class="hint">見つかりませんでした。登録に無い商品は「空きなし」です。</div>';
-  bindItems(box, "result2");
-});
-function renderList() {
-  const body = document.getElementById("list-body");
-  if (!DATA.length) { body.innerHTML = '<div class="hint" style="font-size:15px;">まだデータがありません。空き棚のプライスカード写真を送ってください。</div>'; return; }
-  const sorted = DATA.slice().sort((a, b) => {
-    const ka = (a.p && a.p[0]) || [999,999,999], kb = (b.p && b.p[0]) || [999,999,999];
-    return ka[0]-kb[0] || ka[1]-kb[1] || ka[2]-kb[2];
-  });
-  let html = "", group = "";
-  for (const d of sorted) {
-    const g = (d.p && d.p[0]) ? "ゴンドラ" + d.p[0][0] : "位置未設定";
-    if (g !== group) { group = g; html += '<div class="group">' + g + "</div>"; }
-    html += itemHtml(d);
+  if (jan.length === 8) {
+    let s = 0; for (let i = 0; i < 7; i++) s += d[i] * (i % 2 === 0 ? 3 : 1);
+    return (10 - s % 10) % 10 === d[7];
   }
-  body.innerHTML = html;
-  body.querySelectorAll(".item").forEach(el => el.addEventListener("click", () => {
-    showResult(document.getElementById("result2"), judge(el.dataset.jan));
-    switchView("search");
-  }));
+  return false;
 }
-renderList();
+function cleanJan(v) { return (v || "").replace(/\D/g, ""); }
+function janError(jan) {
+  if (!/^\d{8}$/.test(jan) && !/^\d{13}$/.test(jan)) return "JANは8桁または13桁で読み取ってください。";
+  if (!validCheckDigit(jan)) return "チェックデジットが合いません。読み取りミスの可能性があります。";
+  return null;
+}
 function ean13(jan) {
   const d = jan.split("").map(Number);
   const par = TABLES.P[d[0]];
@@ -275,8 +174,8 @@ function ean8(jan) {
   bits += "101";
   return bits;
 }
-function drawBarcode(jan) {
-  const cv = document.getElementById("s-bc"), ph = document.getElementById("s-bcph"), jt = document.getElementById("s-jan");
+function drawBarcode(prefix, jan) {
+  const cv = document.getElementById(prefix + "-bc"), ph = document.getElementById(prefix + "-bcph"), jt = document.getElementById(prefix + "-jan");
   let bits = null, guard = null;
   if (/^\d{13}$/.test(jan || "")) { bits = ean13(jan); guard = i => (i < 3 || (i >= 46 && i < 50) || i >= 92); }
   else if (/^\d{8}$/.test(jan || "")) { bits = ean8(jan); guard = i => (i < 3 || (i >= 31 && i < 36) || i >= 64); }
@@ -291,111 +190,194 @@ function drawBarcode(jan) {
   }
   cv.style.display = "block"; jt.textContent = jan; ph.style.display = "none";
 }
-let scanShelfG = SHELVES.length ? SHELVES[0].g : null;
-let scanNav = null;
-let scanJan = null;
-function shelfGridHtml(g, hl) {
-  const grid = GRIDS[g];
-  if (!grid) return '<div class="hint">まだ空き棚データがありません。</div>';
-  let rows = "";
-  grid.forEach((cnt, ri) => {
-    let cells = "";
-    for (let ci = 1; ci <= cnt; ci++) {
-      const hit = hl && hl.t === ri + 1 && hl.p === ci;
-      cells += '<span class="scell' + (hit ? " hit" : "") + '" data-t="' + (ri + 1) + '" data-p="' + ci + '"' + (hit ? ' style="background:#2563eb"' : "") + "></span>";
-    }
-    rows += '<div class="srow"><span class="slab">' + (ri + 1) + "段</span>" + cells + "</div>";
-  });
-  return '<div class="shelf" data-g="' + g + '"><div class="stitle">棚の棚：ゴンドラ' + g + "</div>" + rows + "</div>";
-}
-function renderScanShelf() {
-  const area = document.getElementById("shelf-area");
-  if (scanShelfG === null) { area.innerHTML = '<div class="hint" style="font-size:14px;">空き棚データはまだありません。プライスカード写真が届いたら、ここに棚の模式図が出ます。</div>'; return; }
-  const hl = (scanNav && scanNav.g === scanShelfG) ? scanNav : null;
-  area.innerHTML = shelfGridHtml(scanShelfG, hl);
-  const sh = area.querySelector(".shelf");
-  if (sh) sh.querySelectorAll(".scell").forEach(cell => cell.addEventListener("click", () => {
-    if (Date.now() < suppressTapUntil) return;
-    scanGoto(scanShelfG, +cell.dataset.t, +cell.dataset.p);
-  }));
-  document.querySelectorAll("#g-buttons .chip").forEach(ch => {
-    ch.classList.toggle("active", +ch.dataset.g === scanShelfG);
-  });
-}
-function renderGButtons() {
-  const box = document.getElementById("g-buttons");
-  if (!SHELVES.length) { box.innerHTML = ""; return; }
-  box.innerHTML = SHELVES.map(s => '<button class="chip" data-g="' + s.g + '">' + s.label + "</button>").join("");
-  box.querySelectorAll(".chip").forEach(ch => ch.addEventListener("click", () => {
-    scanShelfG = +ch.dataset.g;
-    scanNav = null;
-    if (scanJan) {
-      const d = byJan.get(scanJan);
-      if (d && d.p) for (const a of d.p) { if (a[0] === scanShelfG) { scanNav = { g: scanShelfG, t: a[1], p: a[2] }; break; } }
-    }
-    renderScanShelf();
-  }));
-}
-function scanCardHtml(r) {
-  return '<div class="card ' + (r.ari ? "c-ari" : "c-nashi") + '"><div class="cls">' + (r.ari ? "空きあり" : "空きなし") + '</div>' +
-    '<div class="name">' + r.name + '</div><div class="jan">' + r.jan + '</div>' +
-    '<div class="pos">' + r.pos + "</div></div>";
-}
-function showScanResult(r) {
-  scanJan = r.jan;
-  if (r.p && r.p.length) { scanShelfG = r.p[0][0]; scanNav = { g: r.p[0][0], t: r.p[0][1], p: r.p[0][2] }; }
-  else scanNav = null;
-  document.getElementById("result").innerHTML = scanCardHtml(r);
-  drawBarcode(r.jan);
-  renderScanShelf();
-}
-function scanGoto(g, t, p) {
-  scanShelfG = g;
-  scanNav = { g, t, p };
-  const resEl = document.getElementById("result");
-  const d = posIndex.get(g + ":" + t + ":" + p);
-  if (d) {
-    scanJan = d.j;
-    resEl.innerHTML = scanCardHtml(judge(d.j));
-    drawBarcode(d.j);
-  } else {
-    scanJan = null;
-    resEl.innerHTML = '<div class="card empty"><div class="cls">商品なし</div>' +
-      '<div class="name">この位置に商品は置かれていません</div>' +
-      '<div class="pos">ゴンドラ' + g + " 上から" + t + "段目 左から" + p + "番目</div></div>";
-    drawBarcode("");
+function esc(s) { return (s || "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+const VIEWS = ["reg", "chk", "list"];
+function switchView(name) {
+  for (const k of VIEWS) {
+    document.getElementById("view-" + k).classList.toggle("active", k === name);
+    document.getElementById("tab-" + k).classList.toggle("active", k === name);
   }
-  renderScanShelf();
+  document.querySelectorAll(".fixed-btn").forEach(b => b.classList.toggle("show", b.dataset.fixedFor === name));
+  if (name === "list") renderList();
 }
-(function () {
-  const view = document.getElementById("view-scan");
-  let sx = null, sy = null;
-  view.addEventListener("touchstart", e => {
-    if (e.target.closest && e.target.closest("button, input")) { sx = null; return; }
-    sx = e.changedTouches[0].clientX; sy = e.changedTouches[0].clientY;
-  }, { passive: true });
-  view.addEventListener("touchend", e => {
-    if (sx === null) return;
-    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
-    sx = null;
-    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    if (!scanNav) return;
-    suppressTapUntil = Date.now() + 400;
-    const grid = GRIDS[scanNav.g];
-    if (!grid) return;
-    const cnt = grid[scanNav.t - 1];
-    if (!cnt) return;
-    const np = Math.min(cnt, Math.max(1, scanNav.p + (dx > 0 ? -1 : 1)));
-    if (np !== scanNav.p) scanGoto(scanNav.g, scanNav.t, np);
-  }, { passive: true });
-})();
-renderGButtons();
-renderScanShelf();
+for (const k of VIEWS) document.getElementById("tab-" + k).addEventListener("click", () => switchView(k));
+function launchScan(mode) {
+  try { localStorage.setItem(PENDING_KEY, mode); } catch (e) {}
+  const ret = APP_URL + "?scan={CODE}";
+  location.href = "intent://scan/?ret=" + encodeURIComponent(ret) + "&SCAN_FORMATS=EAN_13,EAN_8" +
+    "#Intent;scheme=zxing;package=com.teacapps.barcodescanner;S.browser_fallback_url=" +
+    encodeURIComponent(APP_URL) + ";end";
+}
+document.getElementById("btn-reg-scan").addEventListener("click", () => launchScan("reg"));
+document.getElementById("btn-chk-scan").addEventListener("click", () => launchScan("chk"));
+let memoTargetJan = null;
+function showMemoEditor(jan) {
+  const item = findItem(jan);
+  memoTargetJan = jan;
+  const box = document.getElementById("reg-memo-box");
+  box.style.display = "block";
+  document.getElementById("reg-memo").value = item ? (item.memo || "") : "";
+  document.getElementById("reg-memo-jan").textContent = "対象JAN：" + jan;
+}
+document.getElementById("btn-memo-save").addEventListener("click", () => {
+  if (!memoTargetJan) return;
+  const items = loadStore();
+  const it = items.find(x => x.j === memoTargetJan);
+  if (!it) return;
+  it.memo = document.getElementById("reg-memo").value.trim();
+  saveStore(items);
+  document.getElementById("reg-result").innerHTML = '<div class="card c-reg"><div class="cls">メモを保存しました</div><div class="jan">' + memoTargetJan + '</div><div class="pos">' + esc(it.memo || "（メモなし）") + "</div></div>";
+  updateCount();
+});
+function doRegister(raw) {
+  const jan = cleanJan(raw);
+  const err = janError(jan);
+  const box = document.getElementById("reg-result");
+  if (err) {
+    box.innerHTML = '<div class="card c-err"><div class="cls">登録できませんでした</div><div class="jan">' + esc(jan) + '</div><div class="pos">' + err + "</div></div>";
+    drawBarcode("reg", "");
+    document.getElementById("reg-memo-box").style.display = "none";
+    return;
+  }
+  const existing = findItem(jan);
+  if (existing) {
+    box.innerHTML = '<div class="card c-dup"><div class="cls">登録済みです</div><div class="jan">' + jan + '</div><div class="pos">登録日時：' + fmtDate(existing.at) + (existing.memo ? "\nメモ：" + esc(existing.memo) : "") + "</div></div>";
+  } else {
+    const items = loadStore();
+    items.push({ j: jan, memo: "", at: Date.now() });
+    saveStore(items);
+    box.innerHTML = '<div class="card c-reg"><div class="cls">空き棚を登録しました</div><div class="jan">' + jan + '</div><div class="pos">このJANはアプリ内に保存されました。下でメモを付けられます。</div></div>';
+    if (navigator.vibrate) navigator.vibrate(80);
+  }
+  drawBarcode("reg", jan);
+  showMemoEditor(jan);
+  updateCount();
+}
+let chkTargetJan = null;
+let histCount = 0;
+function addChkHistory(jan, ari) {
+  const box = document.getElementById("chk-hist");
+  if (histCount === 0) box.innerHTML = "";
+  histCount++;
+  const t = new Date();
+  const hh = String(t.getHours()).padStart(2, "0"), mm = String(t.getMinutes()).padStart(2, "0");
+  const div = document.createElement("div");
+  div.className = "hist";
+  div.innerHTML = '<span class="badge ' + (ari ? "badge-ari" : "badge-nashi") + '">' + (ari ? "空きあり" : "空きなし") + "</span><span>" + jan + "</span><time>" + hh + ":" + mm + "</time>";
+  box.prepend(div);
+}
+function doCheck(raw) {
+  const jan = cleanJan(raw);
+  const err = janError(jan);
+  const box = document.getElementById("chk-result");
+  document.getElementById("chk-delete-box").style.display = "none";
+  chkTargetJan = null;
+  if (err) {
+    box.innerHTML = '<div class="card c-err"><div class="cls">照合できませんでした</div><div class="jan">' + esc(jan) + '</div><div class="pos">' + err + "</div></div>";
+    drawBarcode("chk", "");
+    return;
+  }
+  const item = findItem(jan);
+  if (item) {
+    chkTargetJan = jan;
+    box.innerHTML = '<div class="card c-ari"><div class="cls">空きあり</div><div class="name">この商品は入れられます</div><div class="jan">' + jan + '</div><div class="pos">登録日時：' + fmtDate(item.at) + (item.memo ? "\nメモ：" + esc(item.memo) : "") + "</div></div>";
+    document.getElementById("chk-delete-box").style.display = "block";
+    if (navigator.vibrate) navigator.vibrate(80);
+  } else {
+    box.innerHTML = '<div class="card c-nashi"><div class="cls">空きなし</div><div class="name">入れる空き棚は登録されていません</div><div class="jan">' + jan + "</div></div>";
+  }
+  drawBarcode("chk", jan);
+  addChkHistory(jan, !!item);
+}
+document.getElementById("btn-chk-delete").addEventListener("click", () => {
+  if (!chkTargetJan) return;
+  if (!confirm(chkTargetJan + " を補充済みとして削除しますか？")) return;
+  saveStore(loadStore().filter(x => x.j !== chkTargetJan));
+  document.getElementById("chk-result").innerHTML = '<div class="card c-nashi"><div class="cls">削除しました</div><div class="jan">' + chkTargetJan + '</div><div class="pos">補充済みとして登録から外しました。</div></div>';
+  document.getElementById("chk-delete-box").style.display = "none";
+  chkTargetJan = null;
+  updateCount();
+});
+document.getElementById("btn-reg-manual").addEventListener("click", () => {
+  const v = document.getElementById("reg-input").value;
+  if (cleanJan(v).length >= 8) doRegister(v);
+});
+document.getElementById("reg-input").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("btn-reg-manual").click(); });
+document.getElementById("btn-chk-manual").addEventListener("click", () => {
+  const v = document.getElementById("chk-input").value;
+  if (cleanJan(v).length >= 8) doCheck(v);
+});
+document.getElementById("chk-input").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("btn-chk-manual").click(); });
+function renderList() {
+  const body = document.getElementById("list-body");
+  const items = loadStore().slice().sort((a, b) => a.at - b.at);
+  if (!items.length) { body.innerHTML = '<div class="hint" style="font-size:15px;">まだ登録がありません。「空き棚登録」タブからスキャンしてください。</div>'; return; }
+  body.innerHTML = '<div class="group">登録済みの空き棚（' + items.length + '件）</div>' + items.map(it =>
+    '<div class="item"><div class="janline">' + it.j + '</div>' +
+    (it.memo ? '<div class="memo">' + esc(it.memo) + "</div>" : "") +
+    '<div class="date">' + fmtDate(it.at) + "</div>" +
+    '<div class="actions"><button style="background:#059669;" data-edit="' + it.j + '">メモ編集</button><button style="background:#dc2626;" data-del="' + it.j + '">削除</button></div></div>'
+  ).join("");
+  body.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => {
+    if (!confirm(b.dataset.del + " を削除しますか？")) return;
+    saveStore(loadStore().filter(x => x.j !== b.dataset.del));
+    updateCount(); renderList();
+  }));
+  body.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => {
+    switchView("reg");
+    const it = findItem(b.dataset.edit);
+    document.getElementById("reg-result").innerHTML = '<div class="card c-reg"><div class="cls">メモ編集</div><div class="jan">' + b.dataset.edit + "</div></div>";
+    drawBarcode("reg", b.dataset.edit);
+    showMemoEditor(b.dataset.edit);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }));
+}
+document.getElementById("btn-export").addEventListener("click", async () => {
+  const text = JSON.stringify(loadStore(), null, 1);
+  const box = document.getElementById("export-box");
+  box.style.display = "block"; box.value = text; box.select();
+  try { await navigator.clipboard.writeText(text); } catch (e) {}
+  document.getElementById("import-msg").textContent = "書き出しました。コピーできていない場合は、上の枠の内容を長押しでコピーしてください。";
+});
+document.getElementById("btn-import").addEventListener("click", () => {
+  const raw = document.getElementById("import-box").value.trim();
+  const msg = document.getElementById("import-msg");
+  if (!raw) { msg.textContent = "貼り付け内容が空です。"; return; }
+  let parsed = null;
+  try { parsed = JSON.parse(raw); } catch (e) {}
+  const incoming = [];
+  if (Array.isArray(parsed)) {
+    for (const x of parsed) {
+      const jan = cleanJan(x.j || x.jan || "");
+      if (!janError(jan)) incoming.push({ j: jan, memo: (x.memo || "").toString(), at: x.at || Date.now() });
+    }
+  } else {
+    for (const line of raw.split(/\r?\n/)) {
+      const jan = cleanJan(line.split(/[,\t ]/)[0] || "");
+      if (jan && !janError(jan)) incoming.push({ j: jan, memo: "", at: Date.now() });
+    }
+  }
+  const items = loadStore();
+  const have = new Set(items.map(x => x.j));
+  let added = 0;
+  for (const it of incoming) { if (!have.has(it.j)) { items.push(it); have.add(it.j); added++; } }
+  saveStore(items); updateCount();
+  msg.textContent = "復元しました：" + added + "件を追加（重複 " + (incoming.length - added) + "件は除きました）。";
+  if (document.getElementById("view-list").classList.contains("active")) renderList();
+});
+document.getElementById("btn-delete-all").addEventListener("click", () => {
+  if (!loadStore().length) return;
+  if (!confirm("登録を全件削除しますか？元に戻せません。")) return;
+  saveStore([]); updateCount(); renderList();
+  document.getElementById("import-msg").textContent = "全件削除しました。";
+});
+updateCount();
+const __scanQ = new URLSearchParams(location.search).get("scan");
 if (__scanQ) {
-  const r = judge(__scanQ);
-  showScanResult(r);
-  addHistory(r);
-  if (navigator.vibrate) navigator.vibrate(80);
+  let mode = "chk";
+  try { mode = localStorage.getItem(PENDING_KEY) || "chk"; localStorage.removeItem(PENDING_KEY); } catch (e) {}
+  if (mode === "reg") { switchView("reg"); doRegister(__scanQ); }
+  else { switchView("chk"); doCheck(__scanQ); }
   history.replaceState(null, "", location.pathname);
 }
 if (navigator.wakeLock) { const req = () => navigator.wakeLock.request("screen").catch(() => {}); document.addEventListener("click", req, { once: true }); }
