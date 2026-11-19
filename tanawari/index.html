@@ -39,7 +39,9 @@
   .scell:active { opacity: .65; }
   .scell.hit { outline: 2px solid #111827; outline-offset: -1px; }
   .card.empty { background: #4b5563; }
-  .c1 { background: #2563eb; } .c2 { background: #059669; } .c3 { background: #d97706; } .c4 { background: #dc2626; }
+  .c1 { background: #2563eb; } .c2 { background: #059669; } .c3 { background: #d97706; } .c4 { background: #dc2626; } .c0 { background: #6b7280; }
+  .btn-gray { background: #4b5563; } .btn-red { background: #dc2626; } .btn-small { padding: 12px; font-size: 15px; }
+  textarea { width: 100%; padding: 12px; font-size: 14px; border: 2px solid #d1d5db; border-radius: 12px; background: #fff; font-family: ui-monospace, Menlo, monospace; }
   .chips { display: flex; gap: 8px; margin: 4px 0 10px; flex-wrap: wrap; }
   .chip { padding: 9px 14px; border-radius: 999px; border: 2px solid #d1d5db; background: #fff; font-size: 14px; font-weight: 700; }
   .chip.active { background: #1f2937; color: #fff; border-color: #1f2937; }
@@ -72,16 +74,17 @@
 <body>
 <header>
   <h1>棚割りアプリ</h1>
-  <div class="sub">判定22件（2026-11-18受領資料）</div>
+  <div class="sub" id="sub-line">ファイル方式：データ未読み込み</div>
 </header>
 <nav>
   <button id="tab-scan" class="active">判定スキャン</button>
   <button id="tab-search">入力・検索</button>
   <button id="tab-list">判定一覧</button>
+  <button id="tab-data">データ</button>
 </nav>
 <main>
   <section id="view-scan" class="view active">
-    <div id="result"><div class="hint" style="font-size:15px;">まだ判定していません。下の「バーコードスキャン」ボタンで読み取ってください。</div></div>
+    <div id="result"><div class="hint" style="font-size:15px;">まだ判定していません。先に「データ」タブでデータファイルを読み込んでください。読み込み済みなら、下の「バーコードスキャン」ボタンで読み取ってください。</div></div>
     <div id="shelf-area"></div>
     <div class="bc-card">
       <canvas id="s-bc" width="570" height="240"></canvas>
@@ -105,32 +108,219 @@
       <button class="btn" id="btn-jan" style="width:110px; flex:none;">判定</button>
     </div>
     <div class="group">商品名で検索</div>
-    <input type="text" id="name-input" placeholder="例：ムシューダ、カイロ、ホカロン">
+    <input type="text" id="name-input" placeholder="商品名の一部を入力">
     <div id="name-results" style="margin-top:10px;"></div>
     <div id="result2"></div>
   </section>
   <section id="view-list" class="view">
-    <div class="chips">
+    <div class="chips" id="list-chips">
       <button class="chip active" data-f="3">③ 両方（0）</button>
-      <button class="chip" data-f="1">① オンのみ</button>
-      <button class="chip" data-f="2">② オフのみ</button>
+      <button class="chip" data-f="1">① オンのみ（0）</button>
+      <button class="chip" data-f="2">② オフのみ（0）</button>
+      <button class="chip" data-f="0">位置情報なし（0）</button>
     </div>
     <div id="list-body"></div>
   </section>
+  <section id="view-data" class="view">
+    <div class="group" style="margin-top:2px;">読み込み中のデータ</div>
+    <div id="data-info" class="hint" style="font-size:14px; white-space:pre-line;">データ未読み込み</div>
+    <div class="group">データファイルを選ぶ（全入れ替え）</div>
+    <input type="file" id="file-input" accept=".json,.txt,application/json,text/plain" style="display:none;">
+    <button class="btn" id="btn-file">データファイルを選ぶ</button>
+    <div class="hint">共通フォーマット（hantei-backup）のJSONファイルを選ぶと、今のデータと丸ごと入れ替わります。読み込んだデータはこのスマホに保存され、次回からはそのまま使えます。</div>
+    <div class="group">貼り付けて読み込む（全入れ替え）</div>
+    <textarea id="import-box" rows="4" placeholder="書き出した内容をここに貼り付け"></textarea>
+    <button class="btn btn-gray btn-small" id="btn-import">貼り付けて読み込む</button>
+    <div class="group">書き出し（バックアップ・他のアプリへ）</div>
+    <button class="btn btn-gray btn-small" id="btn-export-file">ファイルで書き出す（ダウンロード）</button>
+    <button class="btn btn-gray btn-small" id="btn-export-copy">テキストでコピー（書き出し）</button>
+    <textarea id="export-box" rows="4" placeholder="書き出し結果がここに出ます" style="display:none;"></textarea>
+    <div class="hint" id="data-msg"></div>
+    <div class="group">データ消去</div>
+    <button class="btn btn-red btn-small" id="btn-data-clear">読み込み済みデータを消去</button>
+  </section>
 </main>
 <script>
-const DATA = [{"j": "4562496617309", "n": "SS 強粘着斜めカットスペアテープ（P）90周3巻入", "c": 1, "o": [[1, 4, 2]], "f": null}, {"j": "4562496617378", "n": "SUNSTYLE カーペットスペアテープ（P）90周3巻入", "c": 1, "o": [[1, 4, 4]], "f": null}, {"j": "4562496617385", "n": "SUNSTYLE 強粘着スペアテープ（P）90周3巻入", "c": 1, "o": [[1, 4, 3]], "f": null}, {"j": "4562496617392", "n": "SUNSTYLE フローリング用スペアテープ（P）50周3巻入", "c": 1, "o": [[1, 4, 5]], "f": null}, {"j": "4901987226109", "n": "東洋スーパーワンタッチレンジフードカバーでか 1P", "c": 1, "o": [[1, 1, 2], [2, 1, 2]], "f": null}, {"j": "4901987226116", "n": "スーパー大型レンジフードカバー浅・深兼用型 1P", "c": 1, "o": [[1, 2, 3], [2, 1, 1]], "f": null}, {"j": "4901987227120", "n": "東洋パッと貼るだけ深型用フィルター 60CMX3P", "c": 1, "o": [[1, 2, 1], [2, 2, 2]], "f": null}, {"j": "4901987227823", "n": "東洋取替用60CMに切れてるふんわりフィルター 10P", "c": 1, "o": [[2, 2, 1]], "f": null}, {"j": "4901987230748", "n": "東洋 整流板付専用パッと貼るだけスーパーフィルター 1P", "c": 1, "o": [[1, 2, 2], [2, 2, 3]], "f": null}, {"j": "4901987234975", "n": "東洋パッと貼るだけホコリ取りフィルター 3枚", "c": 1, "o": [[2, 3, 2]], "f": null}, {"j": "4901987254096", "n": "東洋 パッと貼るだけホコリとりフィルター15CM 6枚", "c": 1, "o": [[2, 3, 1]], "f": null}, {"j": "4901987256052", "n": "東洋 そでがのびるレンジパネルでか BE Nベージュ", "c": 1, "o": [[1, 1, 1], [2, 1, 3]], "f": null}, {"j": "4902109220173", "n": "三菱厚っレンジフードフィルターハンドカット取替用 46CM×1.8M", "c": 1, "o": [[2, 2, 4]], "f": null}, {"j": "4903180255177", "n": "トイレバスボンくん抗菌 コンパクトブラシケース付", "c": 1, "o": [[1, 3, 3]], "f": null}, {"j": "4903320168572", "n": "激落ちくんトレループ PRハンディ伸縮 グレー", "c": 1, "o": [[1, 3, 1]], "f": null}, {"j": "4903320168954", "n": "激落ちくんトレループ PRワイパー床・階段用 グレー", "c": 1, "o": [[1, 3, 2]], "f": null}, {"j": "4959244021158", "n": "ALレンジクリーンワイドパネル50×120CM 2枚組", "c": 1, "o": [[1, 3, 4], [2, 4, 1]], "f": null}, {"j": "4959244031287", "n": "ALガスコンロ下敷き55×75CM 2枚組", "c": 1, "o": [[2, 4, 3]], "f": null}, {"j": "4959244094060", "n": "レンジフードフィルターロールタイプ（12）46CM×11M", "c": 1, "o": [[1, 1, 3], [2, 4, 4]], "f": null}, {"j": "4959244094138", "n": "スライド式レンジフードカバー深型用 2枚組", "c": 1, "o": [[1, 3, 5], [2, 4, 2]], "f": null}, {"j": "4959244094381", "n": "レンジフードフィルターミシン目付 3.6M", "c": 1, "o": [[2, 2, 5]], "f": null}, {"j": "4978406025735", "n": "ミラクルSOUJIKOマルチ 45周4P", "c": 1, "o": [[1, 4, 1]], "f": null}];
 const P17 = {"grid": [], "items": []};
 const TABLES = {"L": ["0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011"], "G": ["0100111", "0110011", "0011011", "0100001", "0011101", "0111001", "0000101", "0010001", "0001001", "0010111"], "R": ["1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100"], "P": ["LLLLLL", "LLGLGG", "LLGGLG", "LLGGGL", "LGLLGG", "LGGLLG", "LGGGLL", "LGLGLG", "LGLGGL", "LGGLGL"]};
-const ON_GRIDS = {"1": [3, 3, 5, 5], "2": [3, 5, 2, 4]};
-const OFF_GRIDS = {};
-const byJan = new Map(DATA.map(d => [d.j, d]));
-const posIndex = new Map();
-for (const d of DATA) {
-  if (d.o) for (const a of d.o) posIndex.set("on:" + a[0] + ":" + a[1] + ":" + a[2], d);
-  if (d.f) for (const a of d.f) posIndex.set("off:" + a[0] + ":" + a[1] + ":" + a[2], d);
+/* ===== ファイル方式データセット（2026-11-19〜：埋め込み廃止） ===== */
+const STORE_KEY = "tanawari-dataset-v1";
+let DATA = [];
+let ON_GRIDS = {};
+let OFF_GRIDS = {};
+let SHELVES = [];
+let byJan = new Map();
+let posIndex = new Map();
+let datasetMeta = null;
+const CLS = {1: "① オンのみ", 2: "② オフのみ", 3: "③ オン・オフ両方", 4: "④ 棚落ち", 0: "登録あり（位置情報なし）", "-1": "データ未読み込み"};
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch])); }
+function validCD(jan) {
+  if (!/^\d{13}$/.test(jan) && !/^\d{8}$/.test(jan)) return false;
+  let s = 0;
+  for (let i = 0; i < jan.length - 1; i++) s += (+jan[jan.length - 2 - i]) * (i % 2 === 0 ? 3 : 1);
+  return (10 - (s % 10)) % 10 === +jan[jan.length - 1];
 }
-const CLS = {1: "① オンのみ", 2: "② オフのみ", 3: "③ オン・オフ両方", 4: "④ 棚落ち"};
+function deriveClass(o, f) {
+  const ho = o && o.length, hf = f && f.length;
+  return ho && hf ? 3 : ho ? 1 : hf ? 2 : 0;
+}
+function cleanPos(arr) {
+  if (!Array.isArray(arr)) return null;
+  const out = [];
+  for (const a of arr) {
+    if (Array.isArray(a) && a.length >= 3) {
+      const g = +a[0], t = +a[1], p = +a[2];
+      if (g > 0 && t > 0 && p > 0) out.push([g, t, p]);
+    }
+  }
+  return out.length ? out : null;
+}
+function convertItems(parsed) {
+  /* 共通フォーマット／空き棚形式（配列）／貼り付けテキスト を内部形式へ。{items, skipped} を返す */
+  let rawItems = null;
+  if (Array.isArray(parsed)) rawItems = parsed;
+  else if (parsed && Array.isArray(parsed.items)) rawItems = parsed.items;
+  else return { items: [], skipped: 0, formatError: true };
+  const byJ = new Map();
+  let skipped = 0;
+  for ( const x of rawItems) {
+    if (!x || typeof x !== "object") { skipped++; continue; }
+    const jan = String(x.jan || x.j || "").replace(/\D/g, "");
+    if (!jan || jan.startsWith("000") || !validCD(jan)) { skipped++; continue; }
+    const o = cleanPos(x.on || x.o), f = cleanPos(x.off || x.f);
+    const name = (x.name || x.n || "").toString(), memo = (x.memo || "").toString();
+    if (byJ.has(jan)) {
+      const prev = byJ.get(jan);
+      const merge = (a, b) => {
+        const m = new Map((a || []).map(p => [p.join(":"), p]));
+        for (const p of (b || [])) m.set(p.join(":"), p);
+        return m.size ? [...m.values()].sort((p, q) => p[0] - q[0] || p[1] - q[1] || p[2] - q[2]) : null;
+      };
+      prev.o = merge(prev.o, o); prev.f = merge(prev.f, f);
+      if (!prev.n && name) prev.n = name;
+      if (!prev.memo && memo) prev.memo = memo;
+      prev.c = deriveClass(prev.o, prev.f);
+    } else {
+      byJ.set(jan, { j: jan, n: name, memo, o, f, c: deriveClass(o, f) });
+    }
+  }
+  return { items: [...byJ.values()], skipped, formatError: false };
+}
+function computeGrids() {
+  const mk = (key) => {
+    const per = {};
+    for (const d of DATA) {
+      const arr = key === "on" ? d.o : d.f;
+      if (!arr) continue;
+      for (const a of arr) {
+        per[a[0]] = per[a[0]] || {};
+        per[a[0]][a[1]] = Math.max(per[a[0]][a[1]] || 0, a[2]);
+      }
+    }
+    const out = {};
+    for (const g of Object.keys(per)) {
+      const maxT = Math.max(...Object.keys(per[g]).map(Number));
+      out[g] = Array.from({ length: maxT }, (_, i) => per[g][i + 1] || 0);
+    }
+    return out;
+  };
+  ON_GRIDS = mk("on"); OFF_GRIDS = mk("off");
+  const onSh = Object.keys(ON_GRIDS).sort((a, b) => a - b).map(g => ({ kind: "on", g: +g, label: "ゴンドラ" + g }));
+  const offSh = Object.keys(OFF_GRIDS).sort((a, b) => a - b).map(g => ({ kind: "off", g: +g, label: "オフ" + g }));
+  SHELVES = onSh.concat(offSh);
+}
+function setDataset(items, meta, persist) {
+  DATA = items || [];
+  datasetMeta = meta || null;
+  byJan = new Map(DATA.map(d => [d.j, d]));
+  posIndex = new Map();
+  for (const d of DATA) {
+    if (d.o) for (const a of d.o) posIndex.set("on:" + a[0] + ":" + a[1] + ":" + a[2], d);
+    if (d.f) for (const a of d.f) posIndex.set("off:" + a[0] + ":" + a[1] + ":" + a[2], d);
+  }
+  computeGrids();
+  if (!SHELVES.some(s => s.kind === scanShelf.kind && s.g === scanShelf.g)) {
+    scanShelf = SHELVES.length ? { kind: SHELVES[0].kind, g: SHELVES[0].g } : { kind: "on", g: 1 };
+    scanNav = null;
+  }
+  if (persist) {
+    try {
+      const obj = currentExportObject();
+      obj.loaded_at = new Date().toISOString();
+      if (datasetMeta && datasetMeta.exported_at) obj.exported_at = datasetMeta.exported_at;
+      if (datasetMeta && datasetMeta.app) obj.source_app = datasetMeta.app;
+      localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+    } catch (e) {}
+  }
+  refreshDataUI();
+}
+function currentExportObject() {
+  return {
+    format: "hantei-backup", version: 1, app: "tanawari",
+    exported_at: new Date().toISOString(),
+    items: DATA.map(d => ({ jan: d.j, name: d.n || "", memo: d.memo || "", class: d.c, on: d.o || [], off: d.f || [] }))
+  };
+}
+function fmtDT(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.getFullYear() + "/" + (d.getMonth() + 1) + "/" + d.getDate() + " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+function refreshDataUI() {
+  const sub = document.getElementById("sub-line");
+  const info = document.getElementById("data-info");
+  if (!DATA.length) {
+    if (sub) sub.textContent = "ファイル方式：データ未読み込み";
+    if (info) info.textContent = "データ未読み込み。「データファイルを選ぶ」か「貼り付けて読み込む」で、共通フォーマットのデータを読み込んでください。";
+  } else {
+    if (sub) sub.textContent = "判定" + DATA.length + "件（ファイル読み込み済み）";
+    if (info) {
+      const cnt = c => DATA.filter(d => d.c === c).length;
+      let t = "読み込み中：全" + DATA.length + "件（① " + cnt(1) + "件・② " + cnt(2) + "件・③ " + cnt(3) + "件・位置情報なし " + cnt(0) + "件）";
+      if (datasetMeta && datasetMeta.app) t += "\n作成元アプリ：" + datasetMeta.app;
+      if (datasetMeta && datasetMeta.exported_at) t += "\nファイル作成：" + fmtDT(datasetMeta.exported_at);
+      if (datasetMeta && datasetMeta.loaded_at) t += "\n読み込み：" + fmtDT(datasetMeta.loaded_at);
+      info.innerText = t;
+    }
+  }
+  const labels = { 3: "③ 両方", 1: "① オンのみ", 2: "② オフのみ", 0: "位置情報なし" };
+  document.querySelectorAll("#list-chips .chip").forEach(ch => {
+    const f = +ch.dataset.f;
+    ch.textContent = labels[f] + "（" + DATA.filter(d => d.c === f).length + "）";
+  });
+  renderList(currentListFilter);
+  renderGButtons();
+  renderScanShelf();
+}
+function importDatasetText(raw, via) {
+  const msg = document.getElementById("data-msg");
+  raw = (raw || "").trim();
+  if (!raw) { msg.textContent = "内容が空です。"; return; }
+  let parsed = null;
+  try { parsed = JSON.parse(raw); } catch (e) {}
+  if (parsed === null) {
+    const items = [];
+    for (const line of raw.split(/\r?\n/)) {
+      const jan = (line.split(/[,\t ]/)[0] || "").replace(/\D/g, "");
+      if (jan) items.push({ jan });
+    }
+    parsed = { items };
+  }
+  if (parsed && !Array.isArray(parsed) && parsed.format && parsed.format !== "hantei-backup") {
+    msg.textContent = "形式が違うファイルです（format: " + parsed.format + "）。読み込みを中止しました。";
+    return;
+  }
+  const conv = convertItems(parsed);
+  if (conv.formatError) { msg.textContent = "形式が違うため読み込めませんでした。今のデータはそのままです。"; return; }
+  if (!conv.items.length) { msg.textContent = "有効なJANが1件もありませんでした（チェックデジット不一致・000始まりは除外）。今のデータはそのままです。"; return; }
+  const meta = {
+    app: (!Array.isArray(parsed) && parsed.app) || "不明",
+    exported_at: (!Array.isArray(parsed) && parsed.exported_at) || "",
+    loaded_at: new Date().toISOString()
+  };
+  setDataset(conv.items, meta, true);
+  msg.textContent = "読み込みました：" + conv.items.length + "件（除外 " + conv.skipped + "件）。" + via;
+}
 function posHtml(d) {
   let s = [];
   if (d.o) s.push(d.o.map(a => "オン ゴンドラ" + a[0] + " 上から" + a[1] + "段目 左から" + a[2] + "番目").join("<br>"));
@@ -145,10 +335,17 @@ function posText(d) {
 }
 function judge(jan) {
   jan = (jan || "").replace(/\D/g, "");
+  if (!DATA.length) return { jan, cls: -1, nodata: true, name: "データ未読み込み", pos: "先に「データ」タブでデータファイルを読み込んでください" };
   const d = byJan.get(jan);
-  if (d) return { jan, cls: d.c, name: d.n, pos: posHtml(d), o: d.o, f: d.f };
+  if (d) {
+    let pos = posHtml(d) || "位置情報なし";
+    if (d.memo) pos += "<br>メモ：" + esc(d.memo);
+    return { jan, cls: d.c, name: d.n || "(名称なし)", pos, o: d.o, f: d.f, memo: d.memo || "" };
+  }
   return { jan, cls: 4, name: "資料に無い商品", pos: "棚から外して別処理（棚落ち）" };
 }
+function cardCls(r) { return r.cls < 0 ? "card empty" : "card c" + r.cls; }
+function badgeLabel(cls) { return cls === 0 ? "有" : cls < 0 ? "!" : String(cls); }
 function shelfHtml(kind, grids, a, color, focus) {
   const grid = grids[a[0]];
   if (!grid) return "";
@@ -174,8 +371,8 @@ function showResult(el, r, focus) {
   const color = { 1: "#2563eb", 2: "#059669", 3: "#d97706" }[r.cls] || "#6b7280";
   if (r.o) for (const a of r.o) shelves += shelfHtml("on", ON_GRIDS, a, color, focus);
   if (r.f) for (const a of r.f) shelves += shelfHtml("off", OFF_GRIDS, a, color, focus);
-  el.innerHTML = '<div class="card c' + r.cls + '"><div class="cls">' + CLS[r.cls] + '</div>' +
-    '<div class="name">' + r.name + '</div><div class="jan">' + r.jan + '</div>' +
+  el.innerHTML = '<div class="' + cardCls(r) + '"><div class="cls">' + CLS[r.cls] + '</div>' +
+    '<div class="name">' + esc(r.name) + '</div><div class="jan">' + r.jan + '</div>' +
     '<div class="pos">' + r.pos + '</div>' + shelves + '</div>';
   bindShelfNav(el, focus);
 }
@@ -235,10 +432,10 @@ function addHistory(r) {
   const hh = String(t.getHours()).padStart(2, "0"), mm = String(t.getMinutes()).padStart(2, "0");
   const div = document.createElement("div");
   div.className = "hist";
-  div.innerHTML = '<span class="badge c' + r.cls + '">' + r.cls + '</span><span>' + r.name + '</span><time>' + hh + ":" + mm + "</time>";
+  div.innerHTML = '<span class="badge c' + Math.max(r.cls, 0) + '">' + badgeLabel(r.cls) + '</span><span>' + esc(r.name) + '</span><time>' + hh + ":" + mm + "</time>";
   histList.prepend(div);
 }
-const VIEWS = ["scan", "search", "list"];
+const VIEWS = ["scan", "search", "list", "data"];
 function switchView(name) {
   for (const k of VIEWS) {
     document.getElementById("view-" + k).classList.toggle("active", k === name);
@@ -259,7 +456,8 @@ document.getElementById("btn-jan").addEventListener("click", () => {
 });
 document.getElementById("jan-input").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("btn-jan").click(); });
 function itemHtml(d) {
-  return '<div class="item" data-jan="' + d.j + '"><span class="badge c' + d.c + '">' + d.c + '</span><span><span class="nm">' + d.n + '</span><br><span class="ps">' + posText(d) + " ／ " + d.j + "</span></span></div>";
+  const ps = posText(d) || (d.memo ? "メモ：" + d.memo : "位置情報なし");
+  return '<div class="item" data-jan="' + d.j + '"><span class="badge c' + d.c + '">' + badgeLabel(d.c) + '</span><span><span class="nm">' + esc(d.n || "(名称なし)") + '</span><br><span class="ps">' + esc(ps) + " ／ " + d.j + "</span></span></div>";
 }
 function bindItems(box, target) {
   box.querySelectorAll(".item").forEach(el => el.addEventListener("click", () => {
@@ -275,31 +473,39 @@ document.getElementById("name-input").addEventListener("input", e => {
   box.innerHTML = hits.length ? hits.map(d => itemHtml(d)).join("") : '<div class="hint">見つかりませんでした。資料に無い商品は④棚落ちです。</div>';
   bindItems(box, "result2");
 });
+let currentListFilter = 3;
 function renderList(f) {
+  currentListFilter = f;
   const body = document.getElementById("list-body");
+  if (!body) return;
   const items = DATA.filter(d => d.c === f);
   let html = "", group = "";
+  const firstPos = d => (f === 2 ? (d.f && d.f[0]) : (d.o && d.o[0])) || null;
   const sorted = items.slice().sort((a, b) => {
-    const ka = f === 2 ? a.f[0] : a.o[0], kb = f === 2 ? b.f[0] : b.o[0];
-    return ka[0] - kb[0] || ka[1] - kb[1] || ka[2] - kb[2];
+    const ka = firstPos(a), kb = firstPos(b);
+    if (ka && kb) return ka[0] - kb[0] || ka[1] - kb[1] || ka[2] - kb[2];
+    if (ka) return -1;
+    if (kb) return 1;
+    return (a.n || a.j).localeCompare(b.n || b.j, "ja");
   });
   for (const d of sorted) {
-    const g = f === 2 ? "オフ" + d.f[0][0] : "ゴンドラ" + d.o[0][0];
+    const kp = firstPos(d);
+    const g = f === 0 ? "位置情報なし" : f === 2 ? "オフ" + kp[0] : "ゴンドラ" + kp[0];
     if (g !== group) { group = g; html += '<div class="group">' + g + "</div>"; }
     html += itemHtml(d);
   }
+  if (!html) html = '<div class="hint">' + (DATA.length ? "この分類の商品はありません。" : "データ未読み込みです。「データ」タブで読み込んでください。") + "</div>";
   body.innerHTML = html;
   body.querySelectorAll(".item").forEach(el => el.addEventListener("click", () => {
     showResult(document.getElementById("result2"), judge(el.dataset.jan));
     switchView("search");
   }));
 }
-document.querySelectorAll(".chip").forEach(ch => ch.addEventListener("click", () => {
-  document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+document.querySelectorAll("#list-chips .chip").forEach(ch => ch.addEventListener("click", () => {
+  document.querySelectorAll("#list-chips .chip").forEach(c => c.classList.remove("active"));
   ch.classList.add("active");
   renderList(+ch.dataset.f);
 }));
-renderList(3);
 /* ===== 判定スキャン：模式図・バーコード・ゴンドラ選択 ===== */
 function ean13(jan) {
   const d = jan.split("").map(Number);
@@ -338,7 +544,6 @@ function drawBarcode(jan) {
 }
 const p17Index = new Map();
 for (const it of P17.items) p17Index.set(it.t + ":" + it.p, it);
-const SHELVES = [{"kind": "on", "g": 1, "label": "ゴンドラ1"}, {"kind": "on", "g": 2, "label": "ゴンドラ2"}];
 let scanShelf = { kind: "on", g: 1 };
 let scanNav = null;
 let scanJan = null;
@@ -388,8 +593,8 @@ function renderGButtons() {
   }));
 }
 function scanCardHtml(r) {
-  return '<div class="card c' + r.cls + '"><div class="cls">' + CLS[r.cls] + '</div>' +
-    '<div class="name">' + r.name + '</div><div class="jan">' + r.jan + '</div>' +
+  return '<div class="' + cardCls(r) + '"><div class="cls">' + CLS[r.cls] + '</div>' +
+    '<div class="name">' + esc(r.name) + '</div><div class="jan">' + r.jan + '</div>' +
     '<div class="pos">' + r.pos + "</div></div>";
 }
 function showScanResult(r) {
@@ -453,12 +658,65 @@ function scanGoto(kind, g, t, p) {
     if (np !== scanNav.p) scanGoto(scanNav.kind, scanNav.g, scanNav.t, np);
   }, { passive: true });
 })();
-renderGButtons();
-renderScanShelf();
+/* ===== データタブの操作 ===== */
+document.getElementById("btn-file").addEventListener("click", () => document.getElementById("file-input").click());
+document.getElementById("file-input").addEventListener("change", async e => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  try { importDatasetText(await file.text(), "ファイル「" + file.name + "」から読み込みました。"); }
+  catch (err) { document.getElementById("data-msg").textContent = "ファイルを読み取れませんでした。"; }
+});
+document.getElementById("btn-import").addEventListener("click", () => {
+  importDatasetText(document.getElementById("import-box").value, "貼り付けから読み込みました。");
+});
+document.getElementById("btn-export-file").addEventListener("click", () => {
+  const msg = document.getElementById("data-msg");
+  if (!DATA.length) { msg.textContent = "書き出すデータがありません（データ未読み込み）。"; return; }
+  const text = JSON.stringify(currentExportObject(), null, 1);
+  const now = new Date();
+  const ymd = now.getFullYear() + String(now.getMonth() + 1).padStart(2, "0") + String(now.getDate()).padStart(2, "0");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  a.download = "tanawari-data-" + ymd + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  msg.textContent = "ファイルを書き出しました：tanawari-data-" + ymd + ".json（" + DATA.length + "件）";
+});
+document.getElementById("btn-export-copy").addEventListener("click", async () => {
+  const msg = document.getElementById("data-msg");
+  if (!DATA.length) { msg.textContent = "書き出すデータがありません（データ未読み込み）。"; return; }
+  const text = JSON.stringify(currentExportObject(), null, 1);
+  const box = document.getElementById("export-box");
+  box.style.display = "block"; box.value = text; box.select();
+  try { await navigator.clipboard.writeText(text); } catch (e) {}
+  msg.textContent = "書き出しました。コピーできていない場合は、上の枠の内容を長押しでコピーしてください。";
+});
+document.getElementById("btn-data-clear").addEventListener("click", () => {
+  if (!DATA.length) return;
+  if (!confirm("読み込み済みデータを消去しますか？ファイルがあれば読み込み直せます。")) return;
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+  setDataset([], null, false);
+  document.getElementById("data-msg").textContent = "データを消去しました。";
+});
+/* 保存済みデータの復元（起動時） */
+(function loadPersisted() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    const conv = convertItems(parsed);
+    if (conv.items.length) {
+      datasetMeta = { app: parsed.source_app || parsed.app || "", exported_at: parsed.exported_at || "", loaded_at: parsed.loaded_at || "" };
+      DATA = conv.items;
+    }
+  } catch (e) {}
+})();
+setDataset(DATA, datasetMeta, false);
 if (__scanQ) {
   const r = judge(__scanQ);
   showScanResult(r);
-  addHistory(r);
+  if (!r.nodata) addHistory(r);
   if (navigator.vibrate) navigator.vibrate(80);
   history.replaceState(null, "", location.pathname);
 }
