@@ -11,10 +11,10 @@
 :root{--bg:#f3f4f6;--card:#fff;--ink:#111827;--sub:#6b7280;--line:#e5e7eb;--acc:#2563eb;--brk:#f59e0b;--sup:#7c3aed;--off:#9ca3af}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);padding-bottom:env(safe-area-inset-bottom)}
-header{background:#1f2937;color:#fff;padding:14px 16px 10px;position:sticky;top:0;z-index:10}
+header{background:#1f2937;color:#fff;padding:14px 16px 10px;position:sticky;top:0;z-index:30}
 header h1{font-size:19px}
 header .month{font-size:13px;opacity:.85;margin-top:2px}
-nav.tabs{display:flex;background:#1f2937;position:sticky;top:57px;z-index:10}
+nav.tabs{display:flex;background:#1f2937;position:sticky;top:57px;z-index:30}
 nav.tabs button{flex:1;background:none;border:none;color:#d1d5db;font-size:14px;padding:10px 0;border-bottom:3px solid transparent}
 nav.tabs button.on{color:#fff;border-bottom-color:var(--acc);font-weight:700}
 main{padding:12px;max-width:720px;margin:0 auto}
@@ -28,21 +28,15 @@ main{padding:12px;max-width:720px;margin:0 auto}
 .badge{display:inline-block;font-size:11px;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
 .b-sup{background:#ede9fe;color:var(--sup);border:1px solid #ddd6fe}
 .b-chg{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.b-mod{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
 .mut{color:var(--sub);font-size:13px}
 h3{font-size:14px;margin-bottom:8px;color:#374151}
 table{width:100%;border-collapse:collapse;font-size:14px}
 td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
 th{color:var(--sub);font-weight:600;font-size:12px}
-.tl{position:relative;margin-top:4px}
-.tlrow{display:flex;align-items:center;margin:5px 0}
-.tlname{width:64px;font-size:12px;flex:none;white-space:nowrap;overflow:hidden}
-.tlbar{position:relative;flex:1;height:16px;background:#eef2f7;border-radius:4px}
-.seg{position:absolute;top:0;height:16px;background:#93c5fd;border-radius:4px}
-.seg.brk{background:var(--brk)}
-.tlhead{position:relative;height:14px;margin-left:64px;font-size:10px;color:var(--sub)}
-.tlhead span{position:absolute;transform:translateX(-50%)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{background:#fffbeb;border:1px solid #fde68a;border-radius:999px;padding:3px 10px;font-size:12.5px}
+.chip.mod{background:#f0fdf4;border-color:#bbf7d0}
 .warn{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 10px;font-size:12.5px;color:#991b1b;margin-top:8px}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cal .hd{text-align:center;font-size:12px;color:var(--sub);padding:2px 0}
@@ -58,6 +52,44 @@ th{color:var(--sub);font-weight:600;font-size:12px}
 .note{font-size:13px;line-height:1.7;padding-left:18px}
 .note li{margin-bottom:6px}
 .foot{text-align:center;color:var(--sub);font-size:11px;padding:8px 0 20px}
+/* タイムライン */
+.tlscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px}
+.tlbody{min-width:620px;position:relative}
+.tlrow{display:flex;align-items:stretch;border-bottom:1px solid #f3f4f6;min-height:30px}
+.tlrow:last-child{border-bottom:none}
+.tlname{width:104px;flex:none;position:sticky;left:0;background:var(--card);z-index:5;display:flex;align-items:center;gap:4px;padding:2px 4px;font-size:12px;border-right:1px solid var(--line)}
+.tlname .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lockbtn{background:none;border:1px solid var(--line);border-radius:6px;width:26px;height:26px;flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.lockbtn svg{width:15px;height:15px}
+.lockbtn.locked{background:#fef3c7;border-color:#f59e0b}
+.tltrack{position:relative;flex:1;background:
+ repeating-linear-gradient(90deg, rgba(17,24,39,.14) 0, rgba(17,24,39,.14) 1px, transparent 1px, transparent 6.6667%),
+ repeating-linear-gradient(90deg, rgba(17,24,39,.05) 0, rgba(17,24,39,.05) 1px, transparent 1px, transparent 3.3333%)}
+.tlseg{position:absolute;top:6px;height:18px;background:#93c5fd;border-radius:4px}
+.tlseg.brk{background:var(--brk);border:1px solid #d97706}
+.tlseg.brk.draggable{cursor:grab;touch-action:pan-x pan-y}
+.tlseg.brk.lockedseg{opacity:.55;cursor:not-allowed}
+.tlseg.brk.dragging{cursor:grabbing;z-index:8;box-shadow:0 4px 14px rgba(0,0,0,.35);touch-action:none}
+.tlseg.brk.mod{outline:2px solid #16a34a;outline-offset:0}
+.tlhead{position:relative;height:18px;font-size:10px;color:var(--sub)}
+.tlhead span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+@media (max-width:560px){ .tlhead .half{display:none} }
+.dragtip{position:absolute;left:50%;top:0;z-index:20;background:#111827;color:#fff;font-size:12px;border-radius:6px;padding:3px 8px;transform:translate(-50%,-130%);white-space:nowrap;pointer-events:none}
+.btn{background:var(--card);border:1px solid var(--line);border-radius:8px;font-size:13px;padding:7px 12px;cursor:pointer}
+.btn.primary{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700}
+.btn.danger{color:#b91c1c;border-color:#fecaca}
+.btn:disabled{opacity:.4}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+/* モーダル */
+.modalwrap{position:fixed;inset:0;background:rgba(17,24,39,.55);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:#fff;width:100%;max-width:560px;border-radius:16px 16px 0 0;padding:18px 16px calc(16px + env(safe-area-inset-bottom));max-height:82vh;overflow-y:auto}
+.modal h3{font-size:16px;margin-bottom:10px}
+.chg{font-size:14px;padding:7px 0;border-bottom:1px solid var(--line)}
+.chg .from{color:var(--sub);text-decoration:line-through}
+.chg .to{font-weight:700}
+.errbox{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:8px;padding:10px;font-size:13.5px;line-height:1.6}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#111827;color:#fff;font-size:13px;border-radius:999px;padding:9px 16px;z-index:120;box-shadow:0 6px 20px rgba(0,0,0,.3);max-width:92vw;text-align:center}
+textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px}
 </style>
 </head>
 <body>
@@ -75,26 +107,72 @@ th{color:var(--sub);font-weight:600;font-size:12px}
 <section id="view-rule" hidden></section>
 <div class="foot" id="foot"></div>
 </main>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+<script src="optimizer.js"></script>
 <script>
-const DATA = {"month": "2026-11", "monthLabel": "2026年11月", "days": {"1": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "内倉智津", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "森田まどか", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "池上真奈美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}, {"name": "新規PA1", "start": "09:30", "end": "10:15", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "10:00", "end": "11:00"}, {"name": "登大和", "start": "11:00", "end": "13:00"}, {"name": "須賀諒", "start": "16:00", "end": "17:00"}], "ikeda": null, "nobreak": [["20:30", "21:00"]]}, "2": {"staff": [{"name": "池田亮介", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "大谷由衣子", "start": "08:00", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "内倉智津", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "日高昌美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}, {"name": "草野遥奈", "start": "13:00", "end": "17:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "須賀諒", "start": "13:00", "end": "14:00"}, {"name": "扇優花", "start": "16:00", "end": "17:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 10.25, "store": true}, "nobreak": [["20:30", "21:00"]]}, "3": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "13:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "内倉智津", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "日高昌美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}, {"name": "草野遥奈", "start": "13:00", "end": "17:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "11:00", "end": "12:00"}, {"name": "登大和", "start": "13:00", "end": "15:00"}, {"name": "須賀諒", "start": "15:00", "end": "16:00"}], "ikeda": null, "nobreak": [["20:30", "21:00"]]}, "4": {"staff": [{"name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0.25}, {"name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "松山元大", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "草野遥奈", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}], "breaks": [{"name": "草野遥奈", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["15:00", "17:00"], ["20:00", "21:00"]]}, "5": {"staff": [{"name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0.25}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "10:30", "end": "16:00", "break_h": 1, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "久間恵美子", "start": "07:45", "end": "09:30", "break_h": 0, "support_h": 0}, {"name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "日高昌美", "start": "09:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "大谷由衣子", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "園田恵", "start": "12:00", "end": "13:00"}, {"name": "扇優花", "start": "13:00", "end": "14:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0.25, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "6": {"staff": [{"name": "池田亮介", "start": "08:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "07:45", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "松山元大", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}], "breaks": [{"name": "須賀諒", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "08:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 11.25, "store": true}, "nobreak": [["13:00", "17:00"], ["20:00", "21:00"]]}, "7": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "08:30", "end": "17:45", "break_h": 1, "support_h": 0.75}, {"name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "草野遥奈", "start": "13:00", "end": "16:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "須賀諒", "start": "11:00", "end": "12:00"}, {"name": "登大和", "start": "12:00", "end": "14:00"}], "ikeda": null, "nobreak": [["16:00", "17:00"], ["20:00", "21:00"]]}, "8": {"staff": [{"name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "伊東藍", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "森田まどか", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "園田恵", "start": "16:00", "end": "17:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}, {"name": "須賀諒", "start": "18:00", "end": "19:00"}], "ikeda": {"start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["09:30", "10:00"], ["20:30", "21:00"]]}, "9": {"staff": [{"name": "登大和", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "08:00", "end": "18:00", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "伊東藍", "start": "18:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "日高昌美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "池上真奈美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}, {"name": "草野遥奈", "start": "13:00", "end": "17:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "登大和", "start": "10:00", "end": "12:00"}, {"name": "園田恵", "start": "11:00", "end": "12:00"}, {"name": "須賀諒", "start": "12:00", "end": "13:00"}, {"name": "扇優花", "start": "13:00", "end": "14:00"}], "ikeda": null, "nobreak": [["20:00", "21:00"]]}, "10": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "伊東藍", "start": "13:00", "end": "21:45", "break_h": 1, "support_h": 0}, {"name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "日高昌美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "10:00", "end": "11:00"}, {"name": "大谷由衣子", "start": "11:00", "end": "12:00"}, {"name": "登大和", "start": "12:00", "end": "14:00"}, {"name": "伊東藍", "start": "14:00", "end": "15:00"}], "ikeda": null, "nobreak": [["20:00", "21:00"]]}, "11": {"staff": [{"name": "登大和", "start": "08:30", "end": "15:00", "break_h": 2, "support_h": 0}, {"name": "池田亮介", "start": "14:00", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "07:45", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "14:00", "break_h": 0, "support_h": 0}, {"name": "後藤玲亜", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "須賀諒", "start": "11:00", "end": "12:00"}, {"name": "登大和", "start": "12:00", "end": "14:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}, {"name": "池田亮介", "start": "19:00", "end": "20:00"}], "ikeda": {"start": "14:00", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 5.75, "store": true}, "nobreak": [["15:00", "17:00"], ["20:00", "21:00"]]}, "12": {"staff": [{"name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "日高昌美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "10:00", "end": "11:00"}, {"name": "大谷由衣子", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "13": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "10:00", "end": "11:00"}, {"name": "須賀諒", "start": "11:00", "end": "12:00"}, {"name": "登大和", "start": "12:00", "end": "14:00"}], "ikeda": null, "nobreak": [["20:00", "21:00"]]}, "14": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "応援薬剤師", "start": "09:30", "end": "18:30", "break_h": 1, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "草野遥奈", "start": "08:30", "end": "16:00", "break_h": 1, "support_h": 0}], "breaks": [{"name": "大谷由衣子", "start": "10:00", "end": "11:00"}, {"name": "登大和", "start": "11:00", "end": "13:00"}, {"name": "草野遥奈", "start": "13:00", "end": "14:00"}, {"name": "応援薬剤師", "start": "14:00", "end": "15:00"}], "ikeda": {"start": "08:00", "end": "21:45", "break_h": 2, "support_h": 11.75, "work_h": 11.75, "store": false}, "nobreak": [["20:00", "21:00"]]}, "15": {"staff": [{"name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "08:30", "end": "19:00", "break_h": 1, "support_h": 2}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "森田まどか", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}, {"name": "須賀諒", "start": "18:00", "end": "19:00"}], "ikeda": {"start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "16": {"staff": [{"name": "池田亮介", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "08:00", "end": "18:00", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "内倉智津", "start": "18:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "草野遥奈", "start": "13:00", "end": "17:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "須賀諒", "start": "13:00", "end": "14:00"}, {"name": "扇優花", "start": "14:00", "end": "15:00"}, {"name": "園田恵", "start": "15:00", "end": "16:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 10.25, "store": true}, "nobreak": [["20:00", "21:00"]]}, "17": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "久間恵美子", "start": "07:45", "end": "09:30", "break_h": 0, "support_h": 0}, {"name": "伊東藍", "start": "13:00", "end": "21:45", "break_h": 1, "support_h": 0}, {"name": "日高昌美", "start": "09:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "大谷由衣子", "start": "10:00", "end": "11:00"}, {"name": "登大和", "start": "11:00", "end": "13:00"}, {"name": "園田恵", "start": "12:00", "end": "13:00"}, {"name": "伊東藍", "start": "13:00", "end": "14:00"}], "ikeda": null, "nobreak": [["20:00", "21:00"]]}, "18": {"staff": [{"name": "登大和", "start": "08:30", "end": "14:00", "break_h": 2, "support_h": 1}, {"name": "池田亮介", "start": "13:00", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "07:45", "end": "18:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"name": "久間恵美子", "start": "07:45", "end": "09:30", "break_h": 0, "support_h": 0}, {"name": "伊東藍", "start": "18:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "須賀諒", "start": "11:00", "end": "12:00"}, {"name": "登大和", "start": "12:00", "end": "14:00"}, {"name": "池田亮介", "start": "14:00", "end": "15:00"}, {"name": "池田亮介", "start": "18:00", "end": "19:00"}], "ikeda": {"start": "13:00", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 6.75, "store": true}, "nobreak": [["15:00", "17:00"], ["20:00", "21:00"]]}, "19": {"staff": [{"name": "登大和", "start": "13:00", "end": "17:00", "break_h": 0, "support_h": 0}, {"name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "久間恵美子", "start": "07:45", "end": "09:30", "break_h": 0, "support_h": 0}, {"name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "日高昌美", "start": "09:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "池上真奈美", "start": "09:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "10:00", "end": "11:00"}, {"name": "大谷由衣子", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "20": {"staff": [{"name": "池田亮介", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "塩本聖", "start": "07:30", "end": "09:30", "break_h": 0, "support_h": 0}, {"name": "内倉智津", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "10:00", "end": "11:00"}, {"name": "須賀諒", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 10.25, "store": true}, "nobreak": [["20:00", "21:00"]]}, "21": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "08:30", "end": "18:00", "break_h": 1, "support_h": 0}, {"name": "伊東藍", "start": "18:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "内倉智津", "start": "15:15", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "草野遥奈", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "須賀諒", "start": "10:00", "end": "11:00"}, {"name": "登大和", "start": "11:00", "end": "13:00"}], "ikeda": null, "nobreak": [["13:00", "15:15"], ["20:00", "21:00"]]}, "22": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "須賀諒", "start": "10:00", "end": "11:00"}, {"name": "登大和", "start": "11:00", "end": "13:00"}, {"name": "園田恵", "start": "17:00", "end": "18:00"}], "ikeda": null, "nobreak": [["20:00", "21:00"]]}, "23": {"staff": [{"name": "池田亮介", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "大谷由衣子", "start": "08:00", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "伊東藍", "start": "13:00", "end": "21:45", "break_h": 1, "support_h": 0}, {"name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "草野遥奈", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}], "breaks": [{"name": "草野遥奈", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "園田恵", "start": "13:00", "end": "14:00"}, {"name": "伊東藍", "start": "14:00", "end": "15:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 10.25, "store": true}, "nobreak": [["20:00", "21:00"]]}, "24": {"staff": [{"name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "08:30", "end": "18:00", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "内倉智津", "start": "18:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "日高昌美", "start": "13:00", "end": "16:00", "break_h": 0, "support_h": 0}, {"name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "10:00", "end": "11:00"}, {"name": "須賀諒", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "扇優花", "start": "13:00", "end": "14:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "25": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "伊東藍", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "池上真奈美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "登大和", "start": "11:00", "end": "13:00"}, {"name": "須賀諒", "start": "13:00", "end": "14:00"}], "ikeda": null, "nobreak": [["15:00", "16:00"], ["20:30", "21:00"]]}, "26": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "後藤玲亜", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "日高昌美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}, {"name": "草野遥奈", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "10:00", "end": "11:00"}, {"name": "登大和", "start": "11:00", "end": "13:00"}, {"name": "須賀諒", "start": "13:00", "end": "14:00"}], "ikeda": {"start": "08:00", "end": "21:45", "break_h": 2, "support_h": 11.75, "work_h": 11.75, "store": false}, "nobreak": [["20:30", "21:00"]]}, "27": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "池田亮介", "start": "10:00", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "大谷由衣子", "start": "10:00", "end": "11:00"}, {"name": "登大和", "start": "11:00", "end": "13:00"}, {"name": "池田亮介", "start": "13:00", "end": "14:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "10:00", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 9.75, "store": true}, "nobreak": [["09:30", "10:00"]]}, "28": {"staff": [{"name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "応援薬剤師", "start": "09:30", "end": "18:30", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"name": "大谷由衣子", "start": "08:30", "end": "16:00", "break_h": 1, "support_h": 0}, {"name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "応援薬剤師", "start": "10:00", "end": "11:00"}, {"name": "須賀諒", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "大谷由衣子", "start": "13:00", "end": "14:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "29": {"staff": [{"name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"name": "後藤玲亜", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"name": "森田まどか", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"name": "池上真奈美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "12:00", "end": "13:00"}, {"name": "須賀諒", "start": "16:00", "end": "17:00"}, {"name": "登大和", "start": "17:00", "end": "19:00"}], "ikeda": null, "nobreak": [["20:30", "21:00"]]}, "30": {"staff": [{"name": "池田亮介", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"name": "扇優花", "start": "09:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "大谷由衣子", "start": "08:00", "end": "17:00", "break_h": 1, "support_h": 0}, {"name": "伊東藍", "start": "13:00", "end": "21:45", "break_h": 1, "support_h": 0}, {"name": "日高昌美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"name": "園田恵", "start": "10:00", "end": "11:00"}, {"name": "大谷由衣子", "start": "11:00", "end": "12:00"}, {"name": "池田亮介", "start": "12:00", "end": "13:00"}, {"name": "扇優花", "start": "13:00", "end": "14:00"}, {"name": "伊東藍", "start": "14:00", "end": "15:00"}, {"name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 10.25, "store": true}, "nobreak": [["19:00", "21:00"]]}}, "members": [{"name": "池田亮介", "days": 19, "work_h": 204.25, "support_days": 3}, {"name": "登大和", "days": 18, "work_h": 189.5, "support_days": 2}, {"name": "須賀諒", "days": 20, "work_h": 160.0, "support_days": 2}, {"name": "園田恵", "days": 20, "work_h": 160.0, "support_days": 0}, {"name": "大谷由衣子", "days": 17, "work_h": 104.0, "support_days": 0}, {"name": "伊東藍", "days": 19, "work_h": 101.25, "support_days": 0}, {"name": "扇優花", "days": 15, "work_h": 85.5, "support_days": 1}, {"name": "内倉智津", "days": 13, "work_h": 51.25, "support_days": 0}, {"name": "草野遥奈", "days": 10, "work_h": 49.5, "support_days": 0}, {"name": "後藤玲亜", "days": 13, "work_h": 46.25, "support_days": 0}, {"name": "池上真奈美", "days": 11, "work_h": 44.5, "support_days": 0}, {"name": "日高昌美", "days": 11, "work_h": 42.0, "support_days": 0}, {"name": "松山元大", "days": 8, "work_h": 27.5, "support_days": 0}, {"name": "森田まどか", "days": 4, "work_h": 18.0, "support_days": 0}, {"name": "応援薬剤師", "days": 2, "work_h": 16.0, "support_days": 0}, {"name": "久間恵美子", "days": 4, "work_h": 7.0, "support_days": 0}, {"name": "塩本聖", "days": 1, "work_h": 2.0, "support_days": 0}, {"name": "新規PA1", "days": 1, "work_h": 0.75, "support_days": 0}], "ikedaTotals": {"days": 19, "work_h": 204.25}, "updated": "2026-11-20", "notes": ["11/27（金）はシフト変更で休み→出勤（10:00〜21:45・休憩2h）に変更済み", "休憩条件：9:30〜21:00の間のみ、休憩中も売場に最低2人（3人以上いる時間帯のみ）、重なり回避。例外は薬剤師の園田さんのみ他の1名と重なってよい", "池田の休憩は1時間ずつ2回が前提（基本12:00〜13:00と17:00〜18:00）", "応援は店舗名を入れず「応援○時間」とだけ表示する", "全員版と個人版で本人のシフトに食い違いあり（8日・15日・11日の出勤時刻、月合計 全員版204.25h／個人版204.75h）。このアプリは全員版ベース"]};
+const DATA = {"month": "2026-11", "monthLabel": "2026年11月", "days": {"1": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e14", "name": "森田まどか", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e15", "name": "池上真奈美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}, {"id": "e18", "name": "新規PA1", "start": "09:30", "end": "10:15", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "10:00", "end": "11:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "11:00", "end": "13:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "16:00", "end": "17:00"}], "ikeda": null, "nobreak": [["20:30", "21:00"]]}, "2": {"staff": [{"id": "e02", "name": "池田亮介", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:00", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e13", "name": "日高昌美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}, {"id": "e17", "name": "草野遥奈", "start": "13:00", "end": "17:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "13:00", "end": "14:00"}, {"id": "e06-b1", "empId": "e06", "name": "扇優花", "start": "16:00", "end": "17:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 10.25, "store": true}, "nobreak": [["20:30", "21:00"]]}, "3": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "13:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e13", "name": "日高昌美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}, {"id": "e17", "name": "草野遥奈", "start": "13:00", "end": "17:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "11:00", "end": "12:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "13:00", "end": "15:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "15:00", "end": "16:00"}], "ikeda": null, "nobreak": [["20:30", "21:00"]]}, "4": {"staff": [{"id": "e02", "name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0.25}, {"id": "e12", "name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e16", "name": "松山元大", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e17", "name": "草野遥奈", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}], "breaks": [{"id": "e17-b1", "empId": "e17", "name": "草野遥奈", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["15:00", "17:00"], ["20:00", "21:00"]]}, "5": {"staff": [{"id": "e02", "name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0.25}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "10:30", "end": "16:00", "break_h": 1, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e09", "name": "久間恵美子", "start": "07:45", "end": "09:30", "break_h": 0, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e13", "name": "日高昌美", "start": "09:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e15", "name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e07-b1", "empId": "e07", "name": "大谷由衣子", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "12:00", "end": "13:00"}, {"id": "e06-b1", "empId": "e06", "name": "扇優花", "start": "13:00", "end": "14:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0.25, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "6": {"staff": [{"id": "e02", "name": "池田亮介", "start": "08:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "07:45", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e16", "name": "松山元大", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "08:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 11.25, "store": true}, "nobreak": [["13:00", "17:00"], ["20:00", "21:00"]]}, "7": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "08:30", "end": "17:45", "break_h": 1, "support_h": 0.75}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e17", "name": "草野遥奈", "start": "13:00", "end": "16:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "11:00", "end": "12:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "12:00", "end": "14:00"}], "ikeda": null, "nobreak": [["16:00", "17:00"], ["20:00", "21:00"]]}, "8": {"staff": [{"id": "e02", "name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e14", "name": "森田まどか", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "16:00", "end": "17:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "18:00", "end": "19:00"}], "ikeda": {"id": "e02", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["09:30", "10:00"], ["20:30", "21:00"]]}, "9": {"staff": [{"id": "e01", "name": "登大和", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "08:00", "end": "18:00", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "18:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e13", "name": "日高昌美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e15", "name": "池上真奈美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}, {"id": "e17", "name": "草野遥奈", "start": "13:00", "end": "17:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "10:00", "end": "12:00"}, {"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "11:00", "end": "12:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "12:00", "end": "13:00"}, {"id": "e06-b1", "empId": "e06", "name": "扇優花", "start": "13:00", "end": "14:00"}], "ikeda": null, "nobreak": [["20:00", "21:00"]]}, "10": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "13:00", "end": "21:45", "break_h": 1, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e13", "name": "日高昌美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "10:00", "end": "11:00"}, {"id": "e07-b1", "empId": "e07", "name": "大谷由衣子", "start": "11:00", "end": "12:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "12:00", "end": "14:00"}, {"id": "e10-b1", "empId": "e10", "name": "伊東藍", "start": "14:00", "end": "15:00"}], "ikeda": null, "nobreak": [["20:00", "21:00"]]}, "11": {"staff": [{"id": "e01", "name": "登大和", "start": "08:30", "end": "15:00", "break_h": 2, "support_h": 0}, {"id": "e02", "name": "池田亮介", "start": "14:00", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "07:45", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "14:00", "break_h": 0, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e16", "name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "11:00", "end": "12:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "12:00", "end": "14:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "19:00", "end": "20:00"}], "ikeda": {"id": "e02", "start": "14:00", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 5.75, "store": true}, "nobreak": [["15:00", "17:00"], ["20:00", "21:00"]]}, "12": {"staff": [{"id": "e02", "name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e13", "name": "日高昌美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e15", "name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e16", "name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "10:00", "end": "11:00"}, {"id": "e07-b1", "empId": "e07", "name": "大谷由衣子", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "13": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "10:00", "end": "11:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "11:00", "end": "12:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "12:00", "end": "14:00"}], "ikeda": null, "nobreak": [["20:00", "21:00"]]}, "14": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e05", "name": "応援薬剤師", "start": "09:30", "end": "18:30", "break_h": 1, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e15", "name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e17", "name": "草野遥奈", "start": "08:30", "end": "16:00", "break_h": 1, "support_h": 0}], "breaks": [{"id": "e07-b1", "empId": "e07", "name": "大谷由衣子", "start": "10:00", "end": "11:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "11:00", "end": "13:00"}, {"id": "e17-b1", "empId": "e17", "name": "草野遥奈", "start": "13:00", "end": "14:00"}, {"id": "e05-b1", "empId": "e05", "name": "応援薬剤師", "start": "14:00", "end": "15:00"}], "ikeda": {"id": "e02", "start": "08:00", "end": "21:45", "break_h": 2, "support_h": 11.75, "work_h": 11.75, "store": false}, "nobreak": [["20:00", "21:00"]]}, "15": {"staff": [{"id": "e02", "name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "08:30", "end": "19:00", "break_h": 1, "support_h": 2}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e14", "name": "森田まどか", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "18:00", "end": "19:00"}], "ikeda": {"id": "e02", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "16": {"staff": [{"id": "e02", "name": "池田亮介", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "08:00", "end": "18:00", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "18:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e17", "name": "草野遥奈", "start": "13:00", "end": "17:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "13:00", "end": "14:00"}, {"id": "e06-b1", "empId": "e06", "name": "扇優花", "start": "14:00", "end": "15:00"}, {"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "15:00", "end": "16:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 10.25, "store": true}, "nobreak": [["20:00", "21:00"]]}, "17": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e09", "name": "久間恵美子", "start": "07:45", "end": "09:30", "break_h": 0, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "13:00", "end": "21:45", "break_h": 1, "support_h": 0}, {"id": "e13", "name": "日高昌美", "start": "09:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e15", "name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e16", "name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e07-b1", "empId": "e07", "name": "大谷由衣子", "start": "10:00", "end": "11:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "11:00", "end": "13:00"}, {"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "12:00", "end": "13:00"}, {"id": "e10-b1", "empId": "e10", "name": "伊東藍", "start": "13:00", "end": "14:00"}], "ikeda": null, "nobreak": [["20:00", "21:00"]]}, "18": {"staff": [{"id": "e01", "name": "登大和", "start": "08:30", "end": "14:00", "break_h": 2, "support_h": 1}, {"id": "e02", "name": "池田亮介", "start": "13:00", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "07:45", "end": "18:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"id": "e09", "name": "久間恵美子", "start": "07:45", "end": "09:30", "break_h": 0, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "18:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "11:00", "end": "12:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "12:00", "end": "14:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "14:00", "end": "15:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "18:00", "end": "19:00"}], "ikeda": {"id": "e02", "start": "13:00", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 6.75, "store": true}, "nobreak": [["15:00", "17:00"], ["20:00", "21:00"]]}, "19": {"staff": [{"id": "e01", "name": "登大和", "start": "13:00", "end": "17:00", "break_h": 0, "support_h": 0}, {"id": "e02", "name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e09", "name": "久間恵美子", "start": "07:45", "end": "09:30", "break_h": 0, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e13", "name": "日高昌美", "start": "09:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e15", "name": "池上真奈美", "start": "09:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "10:00", "end": "11:00"}, {"id": "e07-b1", "empId": "e07", "name": "大谷由衣子", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "20": {"staff": [{"id": "e02", "name": "池田亮介", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e08", "name": "塩本聖", "start": "07:30", "end": "09:30", "break_h": 0, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "10:00", "end": "11:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 10.25, "store": true}, "nobreak": [["20:00", "21:00"]]}, "21": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "08:30", "end": "18:00", "break_h": 1, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "18:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "15:15", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e17", "name": "草野遥奈", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "10:00", "end": "11:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "11:00", "end": "13:00"}], "ikeda": null, "nobreak": [["13:00", "15:15"], ["20:00", "21:00"]]}, "22": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e15", "name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e16", "name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "10:00", "end": "11:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "11:00", "end": "13:00"}, {"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "17:00", "end": "18:00"}], "ikeda": null, "nobreak": [["20:00", "21:00"]]}, "23": {"staff": [{"id": "e02", "name": "池田亮介", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:00", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "13:00", "end": "21:45", "break_h": 1, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e17", "name": "草野遥奈", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}], "breaks": [{"id": "e17-b1", "empId": "e17", "name": "草野遥奈", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "13:00", "end": "14:00"}, {"id": "e10-b1", "empId": "e10", "name": "伊東藍", "start": "14:00", "end": "15:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 10.25, "store": true}, "nobreak": [["20:00", "21:00"]]}, "24": {"staff": [{"id": "e02", "name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "08:30", "end": "18:00", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "18:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e13", "name": "日高昌美", "start": "13:00", "end": "16:00", "break_h": 0, "support_h": 0}, {"id": "e15", "name": "池上真奈美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e16", "name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "10:00", "end": "11:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e06-b1", "empId": "e06", "name": "扇優花", "start": "13:00", "end": "14:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "25": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e15", "name": "池上真奈美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "11:00", "end": "13:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "13:00", "end": "14:00"}], "ikeda": null, "nobreak": [["15:00", "16:00"], ["20:30", "21:00"]]}, "26": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e13", "name": "日高昌美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}, {"id": "e17", "name": "草野遥奈", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "10:00", "end": "11:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "11:00", "end": "13:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "13:00", "end": "14:00"}], "ikeda": {"id": "e02", "start": "08:00", "end": "21:45", "break_h": 2, "support_h": 11.75, "work_h": 11.75, "store": false}, "nobreak": [["20:30", "21:00"]]}, "27": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e02", "name": "池田亮介", "start": "10:00", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e07-b1", "empId": "e07", "name": "大谷由衣子", "start": "10:00", "end": "11:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "11:00", "end": "13:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "13:00", "end": "14:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "10:00", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 9.75, "store": true}, "nobreak": [["09:30", "10:00"]]}, "28": {"staff": [{"id": "e02", "name": "池田亮介", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "08:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e05", "name": "応援薬剤師", "start": "09:30", "end": "18:30", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "15:00", "break_h": 0, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:30", "end": "16:00", "break_h": 1, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "17:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e16", "name": "松山元大", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e05-b1", "empId": "e05", "name": "応援薬剤師", "start": "10:00", "end": "11:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e07-b1", "empId": "e07", "name": "大谷由衣子", "start": "13:00", "end": "14:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 12.0, "store": true}, "nobreak": [["20:00", "21:00"]]}, "29": {"staff": [{"id": "e01", "name": "登大和", "start": "07:45", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e03", "name": "須賀諒", "start": "12:00", "end": "20:30", "break_h": 1, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e11", "name": "内倉智津", "start": "17:00", "end": "20:00", "break_h": 0, "support_h": 0}, {"id": "e12", "name": "後藤玲亜", "start": "16:00", "end": "21:45", "break_h": 0, "support_h": 0}, {"id": "e14", "name": "森田まどか", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}, {"id": "e15", "name": "池上真奈美", "start": "08:30", "end": "12:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "12:00", "end": "13:00"}, {"id": "e03-b1", "empId": "e03", "name": "須賀諒", "start": "16:00", "end": "17:00"}, {"id": "e01-b1", "empId": "e01", "name": "登大和", "start": "17:00", "end": "19:00"}], "ikeda": null, "nobreak": [["20:30", "21:00"]]}, "30": {"staff": [{"id": "e02", "name": "池田亮介", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0}, {"id": "e04", "name": "園田恵", "start": "10:00", "end": "19:00", "break_h": 1, "support_h": 0}, {"id": "e06", "name": "扇優花", "start": "09:30", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e07", "name": "大谷由衣子", "start": "08:00", "end": "17:00", "break_h": 1, "support_h": 0}, {"id": "e10", "name": "伊東藍", "start": "13:00", "end": "21:45", "break_h": 1, "support_h": 0}, {"id": "e13", "name": "日高昌美", "start": "08:30", "end": "13:00", "break_h": 0, "support_h": 0}], "breaks": [{"id": "e04-b1", "empId": "e04", "name": "園田恵", "start": "10:00", "end": "11:00"}, {"id": "e07-b1", "empId": "e07", "name": "大谷由衣子", "start": "11:00", "end": "12:00"}, {"id": "e02-b1", "empId": "e02", "name": "池田亮介", "start": "12:00", "end": "13:00"}, {"id": "e06-b1", "empId": "e06", "name": "扇優花", "start": "13:00", "end": "14:00"}, {"id": "e10-b1", "empId": "e10", "name": "伊東藍", "start": "14:00", "end": "15:00"}, {"id": "e02-b2", "empId": "e02", "name": "池田亮介", "start": "17:00", "end": "18:00"}], "ikeda": {"id": "e02", "start": "09:30", "end": "21:45", "break_h": 2, "support_h": 0, "work_h": 10.25, "store": true}, "nobreak": [["19:00", "21:00"]]}}, "members": [{"name": "池田亮介", "days": 19, "work_h": 204.25, "support_days": 3}, {"name": "登大和", "days": 18, "work_h": 189.5, "support_days": 2}, {"name": "須賀諒", "days": 20, "work_h": 160.0, "support_days": 2}, {"name": "園田恵", "days": 20, "work_h": 160.0, "support_days": 0}, {"name": "大谷由衣子", "days": 17, "work_h": 104.0, "support_days": 0}, {"name": "伊東藍", "days": 19, "work_h": 101.25, "support_days": 0}, {"name": "扇優花", "days": 15, "work_h": 85.5, "support_days": 1}, {"name": "内倉智津", "days": 13, "work_h": 51.25, "support_days": 0}, {"name": "草野遥奈", "days": 10, "work_h": 49.5, "support_days": 0}, {"name": "後藤玲亜", "days": 13, "work_h": 46.25, "support_days": 0}, {"name": "池上真奈美", "days": 11, "work_h": 44.5, "support_days": 0}, {"name": "日高昌美", "days": 11, "work_h": 42.0, "support_days": 0}, {"name": "松山元大", "days": 8, "work_h": 27.5, "support_days": 0}, {"name": "森田まどか", "days": 4, "work_h": 18.0, "support_days": 0}, {"name": "応援薬剤師", "days": 2, "work_h": 16.0, "support_days": 0}, {"name": "久間恵美子", "days": 4, "work_h": 7.0, "support_days": 0}, {"name": "塩本聖", "days": 1, "work_h": 2.0, "support_days": 0}, {"name": "新規PA1", "days": 1, "work_h": 0.75, "support_days": 0}], "ikedaTotals": {"days": 19, "work_h": 204.25}, "updated": "2026-11-20", "notes": ["11/27（金）はシフト変更で休み→出勤（10:00〜21:45・休憩2h）に変更済み", "休憩条件：9:30〜21:00の間のみ、休憩中も売場に最低2人（3人以上いる時間帯のみ）、重なり回避。例外は薬剤師の園田さんのみ他の1名と重なってよい", "池田の休憩は1時間ずつ2回が前提（基本12:00〜13:00と17:00〜18:00）", "応援は店舗名を入れず「応援○時間」とだけ表示する", "全員版と個人版で本人のシフトに食い違いあり（8日・15日・11日の出勤時刻、月合計 全員版204.25h／個人版204.75h）。このアプリは全員版ベース"]};
 const WD = ["日","月","火","水","木","金","土"];
 const [Y, M] = DATA.month.split("-").map(Number);
+const LS_KEY = "shift-break-state-v1";
+const EXCEPTION_NAME = "園田恵";
+const F = BreakOptimizer.fmt;
 let sel = (()=>{ const n=new Date(); return (n.getFullYear()===Y && n.getMonth()+1===M) ? n.getDate() : 1; })();
 let tab = "day";
 document.getElementById("monthLabel").textContent = DATA.monthLabel + "｜サンドラッグ片縄店";
-document.getElementById("foot").textContent = "データ更新：" + DATA.updated + "（シフト変更時・月次登録時のみ更新）";
+document.getElementById("foot").textContent = "データ更新：" + DATA.updated + "（シフト変更時・月次登録時のみ更新）／休憩の変更はこの端末に保存されます";
 function wd(d){ return WD[new Date(Y, M-1, d).getDay()]; }
 function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
-function brkOf(name, d){ return DATA.days[d].breaks.filter(b=>b.name===name); }
-function brkText(name, d){ const b=brkOf(name,d); return b.length ? b.map(x=>x.start+"〜"+x.end).join("、") : ""; }
+function tm(t){ const[a,b]=t.split(":").map(Number); return a*60+b; }
+function nameOf(day, empId){ const s = day.staff.find(x=>x.id===empId); return s ? s.name : empId; }
+
+/* ---------- 保存状態 (localStorage) ---------- */
+function loadState(){ try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e){ return {}; } }
+function saveState(st){ localStorage.setItem(LS_KEY, JSON.stringify(st)); }
+function dayState(dayKey){
+  const st = loadState();
+  const m = st[DATA.month] || {};
+  return m[dayKey] || { breaks:{}, locks:[], rev:0, updatedAt:null, history:[] };
+}
+function writeDayState(dayKey, ds){
+  const st = loadState();
+  if(!st[DATA.month]) st[DATA.month] = {};
+  st[DATA.month][dayKey] = ds;
+  saveState(st);
+}
+function effBreaks(dayKey){
+  const day = DATA.days[dayKey], ds = dayState(dayKey);
+  return day.breaks.map(b => {
+    const o = ds.breaks[b.id];
+    return o ? { ...b, start:F(o.s), end:F(o.e), modified:true } : { ...b, modified:false };
+  });
+}
+function effBreaksMin(dayKey){
+  return effBreaks(dayKey).map(b => ({ id:b.id, empId:b.empId, name:b.name, start:tm(b.start), end:tm(b.end), modified:b.modified }));
+}
+function locksOf(dayKey){ return new Set(dayState(dayKey).locks || []); }
+function isModified(dayKey){ const ds = dayState(dayKey); return Object.keys(ds.breaks||{}).length > 0; }
+function brkText(dayKey, empId){
+  const b = effBreaks(dayKey).filter(x=>x.empId===empId);
+  return b.length ? b.map(x=>x.start+"〜"+x.end).join("、") : "";
+}
+function toast(msg, ms){
+  const r = document.getElementById("toastRoot");
+  r.innerHTML = '<div class="toast">'+esc(msg)+'</div>';
+  setTimeout(()=>{ r.innerHTML=""; }, ms||2600);
+}
+
+/* ---------- 日別 ---------- */
+const LOCK_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2" fill="#e5e7eb"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>';
+const LOCK_CLOSED = '<svg viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2" fill="#f59e0b"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 
 function renderDay(){
-  const d = String(sel), day = DATA.days[d], ik = day.ikeda;
+  const d = String(sel), day = DATA.days[d], ik = day.ikeda, locks = locksOf(d);
+  const ebr = effBreaks(d);
   let h = '<div class="daynav"><button id="prev">◀</button><div class="dlabel">'+M+'/'+sel+'（'+wd(sel)+'）</div><div>';
   const n = new Date();
   if(!(n.getFullYear()===Y && n.getMonth()+1===M && n.getDate()===sel)) h += '<button class="today" id="todayBtn">今日</button> ';
   h += '<button id="next">▶</button></div></div>';
-  // 自分のシフト
   h += '<div class="card my"><h3>あなたのシフト</h3>';
   if(!ik){ h += '<div class="big">休み</div>'; }
   else{
@@ -102,43 +180,242 @@ function renderDay(){
     if(ik.support_h>0 && !ik.store) h += '<span class="badge b-sup">応援'+ik.support_h+'時間</span>';
     if(sel===27) h += '<span class="badge b-chg">シフト変更（休み→出勤）</span>';
     h += '</div><div class="mut">休憩'+ik.break_h+'時間 ・ 稼働'+ik.work_h+'時間'+(ik.store?' ・ 片縄店勤務':' ・ 終日応援（片縄店は不在）')+'</div>';
-    const mb = brkText("池田亮介", d);
-    if(ik.store && mb) h += '<div style="margin-top:6px">休憩プラン：'+esc(mb)+'</div>';
+    if(ik.store){ const mb = brkText(d, ik.id); if(mb) h += '<div style="margin-top:6px">休憩プラン：'+esc(mb)+'</div>'; }
     if(ik.support_h>0 && ik.store) h += '<div class="mut" style="margin-top:4px">応援'+ik.support_h+'時間を含む日です</div>';
   }
   h += '</div>';
-  // 休憩プラン
-  if(day.breaks.length){
-    h += '<div class="card"><h3>休憩プラン</h3><div class="chips">';
-    for(const b of day.breaks) h += '<span class="chip">'+esc(b.name)+' '+b.start+'〜'+b.end+'</span>';
+  if(ebr.length){
+    h += '<div class="card"><h3>休憩プラン'+(isModified(d)?' <span class="badge b-mod">変更済み</span>':'')+'</h3><div class="chips">';
+    for(const b of ebr) h += '<span class="chip'+(b.modified?' mod':'')+'">'+esc(b.name)+' '+b.start+'〜'+b.end+'</span>';
     h += '</div>';
     if(day.nobreak.length) h += '<div class="warn">⚠️ 2人以下で休憩に入れない時間帯：'+day.nobreak.map(z=>z[0]+'〜'+z[1]).join('、')+'</div>';
+    const ds = dayState(d);
+    h += '<div class="btnrow"><button class="btn" id="undoBtn" '+((ds.history&&ds.history.length)?'':'disabled')+'>↩ 元に戻す</button><button class="btn danger" id="resetBtn" '+(isModified(d)||locks.size?'':'disabled')+'>この日の変更をリセット</button></div>';
+    h += '<div class="mut" style="margin-top:6px">休憩バーは長押ししてからドラッグで移動できます（30分刻み）。鍵アイコンで固定できます。</div>';
     h += '</div>';
   }
-  // 出勤者全員
-  h += '<div class="card"><h3>出勤者全員（'+day.staff.length+'人）</h3><table><tr><th>氏名</th><th>出勤〜退勤</th><th>休憩</th></tr>';
+  h += '<div class="card"><h3>出勤者全員（'+day.staff.length+'人）</h3><table><tr><th></th><th>氏名</th><th>出勤〜退勤</th><th>休憩</th></tr>';
   for(const s of day.staff){
-    h += '<tr><td>'+esc(s.name)+(s.support_h>0?' <span class="badge b-sup">応援'+s.support_h+'h</span>':'')+'</td><td>'+s.start+'〜'+s.end+'</td><td>'+(s.break_h>0? esc(brkText(s.name,d) || (s.break_h+'時間')) : '―')+'</td></tr>';
+    const locked = locks.has(s.id);
+    h += '<tr><td style="width:34px"><button class="lockbtn'+(locked?' locked':'')+'" data-lock="'+s.id+'" title="ロック切替">'+(locked?LOCK_CLOSED:LOCK_OPEN)+'</button></td><td>'+esc(s.name)+(s.support_h>0?' <span class="badge b-sup">応援'+s.support_h+'h</span>':'')+'</td><td>'+s.start+'〜'+s.end+'</td><td>'+(s.break_h>0? esc(brkText(d, s.id) || (s.break_h+'時間')) : '―')+'</td></tr>';
   }
   h += '</table></div>';
-  // タイムライン 7:00-22:00
+  // タイムライン 7:00-22:00, 30分グリッド
   const T0=7*60, T1=22*60, pc = t => ((t-T0)/(T1-T0)*100);
-  const tm = t => { const[a,b]=t.split(":").map(Number); return a*60+b; };
-  h += '<div class="card"><h3>タイムライン（勤務＝青、休憩＝黄）</h3><div class="tl"><div class="tlhead">';
-  for(let hh=7; hh<=22; hh+=3) h += '<span style="left:'+pc(hh*60)+'%">'+hh+':00</span>';
-  h += '</div>';
+  h += '<div class="card"><h3>タイムライン（勤務＝青、休憩＝黄）</h3><div class="tlscroll"><div class="tlbody">';
+  h += '<div class="tlrow" style="min-height:18px"><div class="tlname" style="border-right:none"></div><div class="tltrack" style="background:none"><div class="tlhead">';
+  for(let t=T0; t<=T1; t+=30){
+    const half = (t%60)!==0;
+    h += '<span class="'+(half?'half':'')+'" style="left:'+pc(t)+'%">'+F(t)+'</span>';
+  }
+  h += '</div></div></div>';
   for(const s of day.staff){
-    h += '<div class="tlrow"><div class="tlname">'+esc(s.name)+'</div><div class="tlbar"><div class="seg" style="left:'+pc(tm(s.start))+'%;width:'+(pc(tm(s.end))-pc(tm(s.start)))+'%"></div>';
-    for(const b of brkOf(s.name, d)) h += '<div class="seg brk" style="left:'+pc(tm(b.start))+'%;width:'+(pc(tm(b.end))-pc(tm(b.start)))+'%"></div>';
+    const locked = locks.has(s.id);
+    h += '<div class="tlrow"><div class="tlname"><button class="lockbtn'+(locked?' locked':'')+'" data-lock="'+s.id+'" title="ロック切替">'+(locked?LOCK_CLOSED:LOCK_OPEN)+'</button><span class="nm">'+esc(s.name)+'</span></div><div class="tltrack">';
+    h += '<div class="tlseg" style="left:'+pc(tm(s.start))+'%;width:'+(pc(tm(s.end))-pc(tm(s.start)))+'%"></div>';
+    for(const b of ebr.filter(x=>x.empId===s.id)){
+      h += '<div class="tlseg brk '+(locked?'lockedseg':'draggable')+(b.modified?' mod':'')+'" data-bid="'+b.id+'" data-emp="'+s.id+'" style="left:'+pc(tm(b.start))+'%;width:'+(pc(tm(b.end))-pc(tm(b.start)))+'%"></div>';
+    }
     h += '</div></div>';
   }
-  h += '</div></div>';
+  h += '</div></div><div class="mut" style="margin-top:6px">横スクロールできます。休憩バーは長押し→ドラッグ（30分刻み）。鍵が閉じた人の休憩は動きません。</div></div>';
   document.getElementById("view-day").innerHTML = h;
   document.getElementById("prev").onclick = ()=>{ if(sel>1){ sel--; renderDay(); } };
   document.getElementById("next").onclick = ()=>{ if(sel<30){ sel++; renderDay(); } };
   const tb = document.getElementById("todayBtn"); if(tb) tb.onclick = ()=>{ const n2=new Date(); if(n2.getFullYear()===Y && n2.getMonth()+1===M){ sel=n2.getDate(); renderDay(); } };
+  const ub = document.getElementById("undoBtn"); if(ub) ub.onclick = undoDay;
+  const rb = document.getElementById("resetBtn"); if(rb) rb.onclick = resetDay;
+  document.querySelectorAll("[data-lock]").forEach(btn => btn.onclick = ()=>toggleLock(btn.dataset.lock));
+  attachDrag(d);
 }
 
+function toggleLock(empId){
+  const d = String(sel), ds = dayState(d);
+  const locks = new Set(ds.locks || []);
+  if(locks.has(empId)) locks.delete(empId); else locks.add(empId);
+  ds.locks = [...locks];
+  ds.rev = (ds.rev||0) + 1;
+  ds.updatedAt = new Date().toISOString();
+  writeDayState(d, ds);
+  renderDay();
+  toast(locks.has(empId) ? "ロックしました（休憩は固定されます）" : "ロックを解除しました");
+}
+
+function undoDay(){
+  const d = String(sel), ds = dayState(d);
+  if(!ds.history || !ds.history.length) return;
+  const prev = ds.history.pop();
+  ds.breaks = prev;
+  ds.rev = (ds.rev||0) + 1;
+  ds.updatedAt = new Date().toISOString();
+  writeDayState(d, ds);
+  renderDay();
+  toast("直前の休憩変更を取り消しました");
+}
+
+function resetDay(){
+  const d = String(sel);
+  showConfirm("この日の変更をリセット", "保存した休憩の変更とロックをすべて消し、元の休憩プランに戻します。よろしいですか？", ()=>{
+    const ds = dayState(d);
+    ds.breaks = {}; ds.locks = []; ds.history = [];
+    ds.rev = (ds.rev||0) + 1;
+    ds.updatedAt = new Date().toISOString();
+    writeDayState(d, ds);
+    renderDay();
+    toast("元の休憩プランに戻しました");
+  });
+}
+
+/* ---------- ドラッグ & 最適化 ---------- */
+let dragCtx = null;
+function attachDrag(dayKey){
+  document.querySelectorAll(".tlseg.brk.draggable").forEach(seg => {
+    seg.addEventListener("pointerdown", ev => onDragStart(ev, seg, dayKey));
+  });
+}
+function onDragStart(ev, seg, dayKey){
+  if(dragCtx) return; // 計算・操作中の連続操作を防ぐ
+  const track = seg.parentElement;
+  const bid = seg.dataset.bid;
+  const day = DATA.days[dayKey];
+  const cur = effBreaksMin(dayKey).find(b=>b.id===bid);
+  if(!cur) return;
+  const staffMem = day.staff.find(s=>s.id===cur.empId);
+  const baseRev = dayState(dayKey).rev || 0;
+  let activated = false, startX = ev.clientX, movedMin = 0;
+  const rect0 = track.getBoundingClientRect();
+  const totalMin = 15*60;
+  const tip = document.createElement("div");
+  tip.className = "dragtip"; tip.style.display = "none";
+  seg.appendChild(tip);
+  const timer = setTimeout(()=>{
+    activated = true;
+    seg.classList.add("dragging");
+    seg.style.touchAction = "none";
+    tip.style.display = "block";
+    tip.textContent = F(cur.start)+"〜"+F(cur.end);
+    try{ seg.setPointerCapture(ev.pointerId); }catch(e){}
+  }, 220);
+  function onMove(e2){
+    if(!activated){
+      if(Math.abs(e2.clientX - startX) > 10){ cleanup(); }
+      return;
+    }
+    const dxMin = (e2.clientX - startX) / rect0.width * totalMin;
+    let ns = Math.round((cur.start + dxMin) / 30) * 30;
+    const len = cur.end - cur.start;
+    const lo = Math.max(tm(staffMem.start), BreakOptimizer.WIN_START);
+    const hi = Math.min(tm(staffMem.end), BreakOptimizer.WIN_END) - len;
+    ns = Math.max(lo, Math.min(hi, ns));
+    movedMin = ns;
+    seg.style.left = ((ns - 7*60) / totalMin * 100) + "%";
+    tip.textContent = F(ns)+"〜"+F(ns+len);
+  }
+  function onUp(){
+    const wasActive = activated, ns = movedMin;
+    cleanup();
+    if(!wasActive) return;
+    seg.classList.remove("dragging");
+    if(!ns || ns === cur.start){ renderDay(); return; }
+    runOptimize(dayKey, bid, ns, baseRev);
+  }
+  function cleanup(){
+    clearTimeout(timer);
+    seg.removeEventListener("pointermove", onMove);
+    seg.removeEventListener("pointerup", onUp);
+    seg.removeEventListener("pointercancel", cleanup);
+    if(tip.parentElement) tip.remove();
+  }
+  seg.addEventListener("pointermove", onMove);
+  seg.addEventListener("pointerup", onUp);
+  seg.addEventListener("pointercancel", cleanup);
+}
+
+function runOptimize(dayKey, bid, newStart, baseRev){
+  const day = DATA.days[dayKey];
+  const staff = day.staff.map(s => ({ id:s.id, name:s.name, start:tm(s.start), end:tm(s.end) }));
+  const breaks = effBreaksMin(dayKey).map(b => ({ id:b.id, empId:b.empId, start:b.start, end:b.end }));
+  const exc = day.staff.find(s=>s.name===EXCEPTION_NAME);
+  dragCtx = { busy:true };
+  let res;
+  try {
+    res = BreakOptimizer.optimize({
+      staff, breaks,
+      lockedEmpIds: [...locksOf(dayKey)],
+      dragged: { breakId: bid, newStart },
+      exceptionEmpId: exc ? exc.id : null
+    });
+  } finally { dragCtx = null; }
+  if(!res.ok){
+    renderDay();
+    showError("休憩を変更できませんでした", res.detail || "固定された休憩時間と既存の休憩ルールを両立できません");
+    return;
+  }
+  const changes = res.moved.map(mv => ({
+    name: nameOf(day, mv.empId),
+    from: F(mv.from.start)+"〜"+F(mv.from.end),
+    to: F(mv.to.start)+"〜"+F(mv.to.end)
+  }));
+  showChangeConfirm(dayKey, res, changes, baseRev);
+}
+
+function showChangeConfirm(dayKey, res, changes, baseRev){
+  const root = document.getElementById("modalRoot");
+  let warned = false;
+  function draw(warn){
+    let h = '<div class="modalwrap"><div class="modal"><h3>休憩の変更確認</h3>';
+    if(warn) h += '<div class="errbox" style="margin-bottom:10px">この日の休憩データが、操作を始めてから別の操作で更新されています。上書きする前に内容を確認してください。</div>';
+    if(changes.length === 0) h += '<div class="chg">変更はありません</div>';
+    for(const c of changes) h += '<div class="chg">'+esc(c.name)+'：<span class="from">'+c.from+'</span> → <span class="to">'+c.to+'</span></div>';
+    h += '<div class="btnrow"><button class="btn primary" id="cfOk">'+(warn?'内容を確認したので保存':'確定して保存')+'</button><button class="btn" id="cfCancel">キャンセル</button></div></div></div>';
+    root.innerHTML = h;
+    document.getElementById("cfCancel").onclick = ()=>{ root.innerHTML=""; renderDay(); };
+    document.getElementById("cfOk").onclick = ()=>{
+      const nowRev = dayState(dayKey).rev || 0;
+      if(nowRev !== baseRev && !warned){ warned = true; draw(true); return; }
+      applyResult(dayKey, res);
+      root.innerHTML = "";
+    };
+  }
+  draw(false);
+}
+
+function applyResult(dayKey, res){
+  const ds = dayState(dayKey);
+  const prevMap = {};
+  for(const b of effBreaks(dayKey)) prevMap[b.id] = { s: tm(b.start), e: tm(b.end) };
+  ds.history = ds.history || [];
+  ds.history.push(prevMap);
+  if(ds.history.length > 20) ds.history.shift();
+  const newMap = {};
+  for(const b of res.breaks) newMap[b.id] = { s: b.start, e: b.end };
+  // 元の埋め込みプランと同じ位置のものは上書きとして保持しない (差分だけ保存)
+  const embedded = DATA.days[dayKey].breaks;
+  ds.breaks = {};
+  for(const b of embedded){
+    const nm = newMap[b.id];
+    if(nm && (nm.s !== tm(b.start) || nm.e !== tm(b.end))) ds.breaks[b.id] = nm;
+  }
+  ds.rev = (ds.rev||0) + 1;
+  ds.updatedAt = new Date().toISOString();
+  writeDayState(dayKey, ds);
+  renderDay();
+  toast("休憩プランを保存しました");
+}
+
+function showError(title, msg){
+  const root = document.getElementById("modalRoot");
+  root.innerHTML = '<div class="modalwrap"><div class="modal"><h3>'+esc(title)+'</h3><div class="errbox">'+esc(msg)+'</div><div class="btnrow"><button class="btn primary" id="erOk">閉じる</button></div></div></div>';
+  document.getElementById("erOk").onclick = ()=>{ root.innerHTML=""; };
+}
+function showConfirm(title, msg, onOk){
+  const root = document.getElementById("modalRoot");
+  root.innerHTML = '<div class="modalwrap"><div class="modal"><h3>'+esc(title)+'</h3><div style="font-size:14px;line-height:1.6">'+esc(msg)+'</div><div class="btnrow"><button class="btn primary" id="scOk">実行する</button><button class="btn" id="scCancel">キャンセル</button></div></div></div>';
+  document.getElementById("scCancel").onclick = ()=>{ root.innerHTML=""; };
+  document.getElementById("scOk").onclick = ()=>{ root.innerHTML=""; onOk(); };
+}
+
+/* ---------- カレンダー / メンバー / ルール ---------- */
 function renderCal(){
   let h = '<div class="card"><h3>'+DATA.monthLabel+'｜池田亮介（出勤'+DATA.ikedaTotals.days+'日 ・ 合計'+DATA.ikedaTotals.work_h+'時間）</h3><div class="cal">';
   for(const w of WD) h += '<div class="hd">'+w+'</div>';
@@ -167,8 +444,33 @@ function renderMem(){
 function renderRule(){
   let h = '<div class="card"><h3>休憩ルール・メモ</h3><ul class="note">';
   for(const n of DATA.notes) h += '<li>'+esc(n)+'</li>';
+  h += '<li>休憩のドラッグ変更・自動再配置でも上記ルールはそのまま適用されます。ロックした人とドラッグした休憩は自動で動きません。</li>';
+  h += '<li>変更はこの端末の中に保存されます（月次シフト表の原本は変更しません）。他の端末とは自動で同期されません。移したいときは下の書き出し／読み込みを使ってください。</li>';
   h += '</ul></div>';
+  h += '<div class="card"><h3>変更データの書き出し／読み込み</h3>'
+     + '<div class="btnrow"><button class="btn" id="expBtn">書き出し（コピー）</button><button class="btn" id="impBtn">読み込み</button></div>'
+     + '<div id="ioArea" style="margin-top:8px"></div></div>';
   document.getElementById("view-rule").innerHTML = h;
+  document.getElementById("expBtn").onclick = ()=>{
+    const payload = JSON.stringify({ format:"shift-break-state", version:1, exported_at:new Date().toISOString(), state: loadState() });
+    document.getElementById("ioArea").innerHTML = '<textarea readonly id="ioTxt">'+esc(payload)+'</textarea><div class="mut">全選択してコピーし、移したい端末の「読み込み」に貼ってください。</div>';
+    const t = document.getElementById("ioTxt"); t.select();
+    if(navigator.clipboard) navigator.clipboard.writeText(payload).then(()=>toast("コピーしました")).catch(()=>{});
+  };
+  document.getElementById("impBtn").onclick = ()=>{
+    document.getElementById("ioArea").innerHTML = '<textarea id="ioTxt" placeholder="書き出したデータを貼り付け"></textarea><div class="btnrow"><button class="btn primary" id="ioGo">読み込む</button></div>';
+    document.getElementById("ioGo").onclick = ()=>{
+      try {
+        const obj = JSON.parse(document.getElementById("ioTxt").value);
+        if(obj.format !== "shift-break-state" || !obj.state) throw new Error("format");
+        showConfirm("変更データの読み込み", "貼り付けたデータで、この端末の休憩変更データを置き換えます。よろしいですか？", ()=>{
+          saveState(obj.state);
+          toast("読み込みました");
+          renderRule();
+        });
+      } catch(e){ showError("読み込めませんでした", "データの形式が違います。書き出しした内容をそのまま貼ってください。"); }
+    };
+  };
 }
 
 function switchTab(t){
