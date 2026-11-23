@@ -1,4 +1,4 @@
-const CACHE = "shift-v2-20261123";
+const CACHE = "shift-v3-20261123";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./optimizer.js"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

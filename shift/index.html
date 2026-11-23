@@ -67,7 +67,13 @@ th{color:var(--sub);font-weight:600;font-size:12px}
  repeating-linear-gradient(90deg, rgba(17,24,39,.05) 0, rgba(17,24,39,.05) 1px, transparent 1px, transparent 3.3333%)}
 .tlseg{position:absolute;top:6px;height:18px;background:#93c5fd;border-radius:4px}
 .tlseg.brk{background:var(--brk);border:1px solid #d97706}
-.tlseg.brk.draggable{cursor:grab;touch-action:pan-x pan-y}
+.tlseg.brk.draggable{cursor:grab;touch-action:pan-y}
+.tlpage .tlrow{min-height:50px}
+.tlpage .tlseg{top:11px;height:28px;border-radius:6px}
+.tlpage .tlname{width:112px;font-size:13px}
+.tlpage .lockbtn{width:32px;height:32px}
+.tlpage .lockbtn svg{width:18px;height:18px}
+.tlpage .tlbody{min-width:760px}
 .tlseg.brk.lockedseg{opacity:.55;cursor:not-allowed}
 .tlseg.brk.dragging{cursor:grabbing;z-index:8;box-shadow:0 4px 14px rgba(0,0,0,.35);touch-action:none}
 .tlseg.brk.mod{outline:2px solid #16a34a;outline-offset:0}
@@ -96,12 +102,14 @@ textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:8
 <header><h1>シフト管理</h1><div class="month" id="monthLabel"></div></header>
 <nav class="tabs">
 <button data-tab="day" class="on">日別</button>
+<button data-tab="tl">タイムライン</button>
 <button data-tab="cal">カレンダー</button>
 <button data-tab="mem">メンバー</button>
 <button data-tab="rule">休憩ルール</button>
 </nav>
 <main>
 <section id="view-day"></section>
+<section id="view-tl" hidden></section>
 <section id="view-cal" hidden></section>
 <section id="view-mem" hidden></section>
 <section id="view-rule" hidden></section>
@@ -191,7 +199,7 @@ function renderDay(){
     if(day.nobreak.length) h += '<div class="warn">⚠️ 2人以下で休憩に入れない時間帯：'+day.nobreak.map(z=>z[0]+'〜'+z[1]).join('、')+'</div>';
     const ds = dayState(d);
     h += '<div class="btnrow"><button class="btn" id="undoBtn" '+((ds.history&&ds.history.length)?'':'disabled')+'>↩ 元に戻す</button><button class="btn danger" id="resetBtn" '+(isModified(d)||locks.size?'':'disabled')+'>この日の変更をリセット</button></div>';
-    h += '<div class="mut" style="margin-top:6px">休憩バーは長押ししてからドラッグで移動できます（30分刻み）。鍵アイコンで固定できます。</div>';
+    h += '<div class="mut" style="margin-top:6px">休憩の移動・固定は「タイムライン」タブで行います。</div>';
     h += '</div>';
   }
   h += '<div class="card"><h3>出勤者全員（'+day.staff.length+'人）</h3><table><tr><th></th><th>氏名</th><th>出勤〜退勤</th><th>休憩</th></tr>';
@@ -200,9 +208,24 @@ function renderDay(){
     h += '<tr><td style="width:34px"><button class="lockbtn'+(locked?' locked':'')+'" data-lock="'+s.id+'" title="ロック切替">'+(locked?LOCK_CLOSED:LOCK_OPEN)+'</button></td><td>'+esc(s.name)+(s.support_h>0?' <span class="badge b-sup">応援'+s.support_h+'h</span>':'')+'</td><td>'+s.start+'〜'+s.end+'</td><td>'+(s.break_h>0? esc(brkText(d, s.id) || (s.break_h+'時間')) : '―')+'</td></tr>';
   }
   h += '</table></div>';
-  // タイムライン 7:00-22:00, 30分グリッド
+  h += '<div class="card"><h3>休憩タイムライン</h3><div class="mut">休憩バーのドラッグ・ロックは「タイムライン」タブで操作します（広い画面で操作できます）。</div><div class="btnrow"><button class="btn primary" id="goTl">タイムラインを開く</button></div></div>';
+  document.getElementById("view-day").innerHTML = h;
+  document.getElementById("prev").onclick = ()=>{ if(sel>1){ sel--; renderDay(); } };
+  document.getElementById("next").onclick = ()=>{ if(sel<30){ sel++; renderDay(); } };
+  const tb = document.getElementById("todayBtn"); if(tb) tb.onclick = ()=>{ const n2=new Date(); if(n2.getFullYear()===Y && n2.getMonth()+1===M){ sel=n2.getDate(); renderDay(); } };
+  const ub = document.getElementById("undoBtn"); if(ub) ub.onclick = undoDay;
+  const rb = document.getElementById("resetBtn"); if(rb) rb.onclick = resetDay;
+  document.querySelectorAll("#view-day [data-lock]").forEach(btn => btn.onclick = ()=>toggleLock(btn.dataset.lock));
+  const gt = document.getElementById("goTl"); if(gt) gt.onclick = ()=>switchTab("tl");
+}
+
+function refresh(){ if(tab==="tl") renderTimeline(); else if(tab==="day") renderDay(); }
+
+/* ---------- タイムライン (独立タブ) ---------- */
+function buildTimeline(dayKey){
+  const day = DATA.days[dayKey], locks = locksOf(dayKey), ebr = effBreaks(dayKey);
   const T0=7*60, T1=22*60, pc = t => ((t-T0)/(T1-T0)*100);
-  h += '<div class="card"><h3>タイムライン（勤務＝青、休憩＝黄）</h3><div class="tlscroll"><div class="tlbody">';
+  let h = '<div class="tlscroll tlpage"><div class="tlbody">';
   h += '<div class="tlrow" style="min-height:18px"><div class="tlname" style="border-right:none"></div><div class="tltrack" style="background:none"><div class="tlhead">';
   for(let t=T0; t<=T1; t+=30){
     const half = (t%60)!==0;
@@ -218,14 +241,34 @@ function renderDay(){
     }
     h += '</div></div>';
   }
-  h += '</div></div><div class="mut" style="margin-top:6px">横スクロールできます。休憩バーは長押し→ドラッグ（30分刻み）。鍵が閉じた人の休憩は動きません。</div></div>';
-  document.getElementById("view-day").innerHTML = h;
-  document.getElementById("prev").onclick = ()=>{ if(sel>1){ sel--; renderDay(); } };
-  document.getElementById("next").onclick = ()=>{ if(sel<30){ sel++; renderDay(); } };
-  const tb = document.getElementById("todayBtn"); if(tb) tb.onclick = ()=>{ const n2=new Date(); if(n2.getFullYear()===Y && n2.getMonth()+1===M){ sel=n2.getDate(); renderDay(); } };
-  const ub = document.getElementById("undoBtn"); if(ub) ub.onclick = undoDay;
-  const rb = document.getElementById("resetBtn"); if(rb) rb.onclick = resetDay;
-  document.querySelectorAll("[data-lock]").forEach(btn => btn.onclick = ()=>toggleLock(btn.dataset.lock));
+  h += '</div></div>';
+  return h;
+}
+
+function renderTimeline(){
+  const d = String(sel), day = DATA.days[d], ik = day.ikeda;
+  const ebr = effBreaks(d);
+  let h = '<div class="daynav"><button id="tlPrev">◀</button><div class="dlabel">'+M+'/'+sel+'（'+wd(sel)+'）</div><div>';
+  const n = new Date();
+  if(!(n.getFullYear()===Y && n.getMonth()+1===M && n.getDate()===sel)) h += '<button class="today" id="tlToday">今日</button> ';
+  h += '<button id="tlNext">▶</button></div></div>';
+  if(ik && ik.store) h += '<div class="mut" style="margin-bottom:8px">あなたの勤務：'+ik.start+'〜'+ik.end+'／休憩：'+esc(brkText(d, ik.id) || '―')+'</div>';
+  if(ebr.length){
+    h += '<div class="chips" style="margin-bottom:10px">';
+    for(const b of ebr) h += '<span class="chip'+(b.modified?' mod':'')+'">'+esc(b.name)+' '+b.start+'〜'+b.end+'</span>';
+    h += '</div>';
+  }
+  h += buildTimeline(d);
+  const ds = dayState(d);
+  h += '<div class="btnrow"><button class="btn" id="tlUndo" '+((ds.history&&ds.history.length)?'':'disabled')+'>↩ 元に戻す</button><button class="btn danger" id="tlReset" '+(isModified(d)||locksOf(d).size?'':'disabled')+'>この日の変更をリセット</button></div>';
+  h += '<div class="mut" style="margin-top:8px;line-height:1.7">黄色い休憩バーを<b>タップしてそのまま横にスライド</b>すると動きます（長押しでも可・30分刻み）。縦に動かすと画面スクロールになります。鍵アイコンが閉じた人の休憩は固定されます。横スクロールで時間帯を広げられます。</div>';
+  document.getElementById("view-tl").innerHTML = h;
+  document.getElementById("tlPrev").onclick = ()=>{ if(sel>1){ sel--; renderTimeline(); } };
+  document.getElementById("tlNext").onclick = ()=>{ if(sel<30){ sel++; renderTimeline(); } };
+  const tb = document.getElementById("tlToday"); if(tb) tb.onclick = ()=>{ const n2=new Date(); if(n2.getFullYear()===Y && n2.getMonth()+1===M){ sel=n2.getDate(); renderTimeline(); } };
+  document.getElementById("tlUndo").onclick = undoDay;
+  document.getElementById("tlReset").onclick = resetDay;
+  document.querySelectorAll("#view-tl [data-lock]").forEach(btn => btn.onclick = ()=>toggleLock(btn.dataset.lock));
   attachDrag(d);
 }
 
@@ -237,7 +280,7 @@ function toggleLock(empId){
   ds.rev = (ds.rev||0) + 1;
   ds.updatedAt = new Date().toISOString();
   writeDayState(d, ds);
-  renderDay();
+  refresh();
   toast(locks.has(empId) ? "ロックしました（休憩は固定されます）" : "ロックを解除しました");
 }
 
@@ -249,7 +292,7 @@ function undoDay(){
   ds.rev = (ds.rev||0) + 1;
   ds.updatedAt = new Date().toISOString();
   writeDayState(d, ds);
-  renderDay();
+  refresh();
   toast("直前の休憩変更を取り消しました");
 }
 
@@ -261,7 +304,7 @@ function resetDay(){
     ds.rev = (ds.rev||0) + 1;
     ds.updatedAt = new Date().toISOString();
     writeDayState(d, ds);
-    renderDay();
+    refresh();
     toast("元の休憩プランに戻しました");
   });
 }
@@ -275,6 +318,7 @@ function attachDrag(dayKey){
 }
 function onDragStart(ev, seg, dayKey){
   if(dragCtx) return; // 計算・操作中の連続操作を防ぐ
+  if(ev.button !== undefined && ev.button !== 0) return;
   const track = seg.parentElement;
   const bid = seg.dataset.bid;
   const day = DATA.days[dayKey];
@@ -282,53 +326,67 @@ function onDragStart(ev, seg, dayKey){
   if(!cur) return;
   const staffMem = day.staff.find(s=>s.id===cur.empId);
   const baseRev = dayState(dayKey).rev || 0;
-  let activated = false, startX = ev.clientX, movedMin = 0;
-  const rect0 = track.getBoundingClientRect();
   const totalMin = 15*60;
+  const startX = ev.clientX, startY = ev.clientY;
+  let activated = false, dead = false, ns = null, trackRect = null;
   const tip = document.createElement("div");
   tip.className = "dragtip"; tip.style.display = "none";
   seg.appendChild(tip);
-  const timer = setTimeout(()=>{
+  function activate(){
+    if(activated || dead) return;
     activated = true;
+    trackRect = track.getBoundingClientRect();
     seg.classList.add("dragging");
-    seg.style.touchAction = "none";
     tip.style.display = "block";
     tip.textContent = F(cur.start)+"〜"+F(cur.end);
     try{ seg.setPointerCapture(ev.pointerId); }catch(e){}
-  }, 220);
+    if(navigator.vibrate) { try{ navigator.vibrate(15); }catch(e){} }
+  }
+  const timer = setTimeout(activate, 180); // 長押しでも起動できる
   function onMove(e2){
+    if(dead) return;
+    const dx = e2.clientX - startX, dy = e2.clientY - startY;
     if(!activated){
-      if(Math.abs(e2.clientX - startX) > 10){ cleanup(); }
-      return;
+      // 縦方向が勝てばスクロールとして諦める / 横方向が勝てば即ドラッグ開始
+      if(Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)){ dead = true; cleanup(); return; }
+      if(Math.abs(dx) > 9 && Math.abs(dx) >= Math.abs(dy)) activate();
+      else return;
     }
-    const dxMin = (e2.clientX - startX) / rect0.width * totalMin;
-    let ns = Math.round((cur.start + dxMin) / 30) * 30;
+    if(!trackRect) trackRect = track.getBoundingClientRect();
+    const dxMin = (e2.clientX - startX) / trackRect.width * totalMin;
+    let cand = Math.round((cur.start + dxMin) / 30) * 30;
     const len = cur.end - cur.start;
     const lo = Math.max(tm(staffMem.start), BreakOptimizer.WIN_START);
     const hi = Math.min(tm(staffMem.end), BreakOptimizer.WIN_END) - len;
-    ns = Math.max(lo, Math.min(hi, ns));
-    movedMin = ns;
-    seg.style.left = ((ns - 7*60) / totalMin * 100) + "%";
-    tip.textContent = F(ns)+"〜"+F(ns+len);
+    cand = Math.max(lo, Math.min(hi, cand));
+    ns = cand;
+    seg.style.left = ((cand - 7*60) / totalMin * 100) + "%";
+    tip.textContent = F(cand)+"〜"+F(cand+len);
+    if(e2.cancelable) e2.preventDefault();
   }
   function onUp(){
-    const wasActive = activated, ns = movedMin;
+    const wasActive = activated, finalNs = ns;
     cleanup();
-    if(!wasActive) return;
+    if(!wasActive || dead) return;
     seg.classList.remove("dragging");
-    if(!ns || ns === cur.start){ renderDay(); return; }
-    runOptimize(dayKey, bid, ns, baseRev);
+    if(finalNs === null || finalNs === cur.start){ refresh(); return; }
+    runOptimize(dayKey, bid, finalNs, baseRev);
   }
   function cleanup(){
     clearTimeout(timer);
-    seg.removeEventListener("pointermove", onMove);
-    seg.removeEventListener("pointerup", onUp);
-    seg.removeEventListener("pointercancel", cleanup);
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    window.removeEventListener("pointercancel", onCancel);
     if(tip.parentElement) tip.remove();
   }
-  seg.addEventListener("pointermove", onMove);
-  seg.addEventListener("pointerup", onUp);
-  seg.addEventListener("pointercancel", cleanup);
+  function onCancel(){
+    const wasActive = activated;
+    cleanup();
+    if(wasActive) refresh();
+  }
+  window.addEventListener("pointermove", onMove, { passive:false });
+  window.addEventListener("pointerup", onUp);
+  window.addEventListener("pointercancel", onCancel);
 }
 
 function runOptimize(dayKey, bid, newStart, baseRev){
@@ -347,7 +405,7 @@ function runOptimize(dayKey, bid, newStart, baseRev){
     });
   } finally { dragCtx = null; }
   if(!res.ok){
-    renderDay();
+    refresh();
     showError("休憩を変更できませんでした", res.detail || "固定された休憩時間と既存の休憩ルールを両立できません");
     return;
   }
@@ -369,7 +427,7 @@ function showChangeConfirm(dayKey, res, changes, baseRev){
     for(const c of changes) h += '<div class="chg">'+esc(c.name)+'：<span class="from">'+c.from+'</span> → <span class="to">'+c.to+'</span></div>';
     h += '<div class="btnrow"><button class="btn primary" id="cfOk">'+(warn?'内容を確認したので保存':'確定して保存')+'</button><button class="btn" id="cfCancel">キャンセル</button></div></div></div>';
     root.innerHTML = h;
-    document.getElementById("cfCancel").onclick = ()=>{ root.innerHTML=""; renderDay(); };
+    document.getElementById("cfCancel").onclick = ()=>{ root.innerHTML=""; refresh(); };
     document.getElementById("cfOk").onclick = ()=>{
       const nowRev = dayState(dayKey).rev || 0;
       if(nowRev !== baseRev && !warned){ warned = true; draw(true); return; }
@@ -399,7 +457,7 @@ function applyResult(dayKey, res){
   ds.rev = (ds.rev||0) + 1;
   ds.updatedAt = new Date().toISOString();
   writeDayState(dayKey, ds);
-  renderDay();
+  refresh();
   toast("休憩プランを保存しました");
 }
 
@@ -476,8 +534,9 @@ function renderRule(){
 function switchTab(t){
   tab = t;
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab===t));
-  for(const v of ["day","cal","mem","rule"]) document.getElementById("view-"+v).hidden = (v!==t);
-  if(t==="day") renderDay(); if(t==="cal") renderCal(); if(t==="mem") renderMem(); if(t==="rule") renderRule();
+  for(const v of ["day","tl","cal","mem","rule"]) document.getElementById("view-"+v).hidden = (v!==t);
+  document.querySelector("main").style.maxWidth = (t==="tl") ? "none" : "720px";
+  if(t==="day") renderDay(); if(t==="tl") renderTimeline(); if(t==="cal") renderCal(); if(t==="mem") renderMem(); if(t==="rule") renderRule();
   window.scrollTo(0,0);
 }
 document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = ()=>switchTab(b.dataset.tab));
